@@ -172,11 +172,13 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		mScore = intent.getIntExtra(SCORE,0);
 		nVies = intent.getIntExtra(NVIES,3);
 		
+		
 		SharedPreferences settings = getSharedPreferences(MenuActivity.PREFS_NAME, 0);
 		//spercentageMusic = settings.getInt("music", 100)/100f;
 		percentageGfx = settings.getInt("sfx", 100)/100f;
 		autoCalibration = settings.getBoolean("calibration", true);
 		autoCalibration = false;
+		
 		
 		this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
 		soundPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
@@ -582,10 +584,17 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 				}
 			}
 		});
+		SharedPreferences settings = this.getSharedPreferences(MenuActivity.PREFS_NAME, 0);
+    	if(settings.getInt("giftizMissionStatus", 0)==1) {// First victory 
+    		GiftizSDK.missionComplete(this);
+    		Editor editor = settings.edit();
+    		editor.putInt("giftizMissionStatus", 2);
+    		editor.commit();
+    	}
 		
-		fpsText = new Text(0,10,font.get(30, Color.WHITE),String.format("%03d", 0),getVertexBufferObjectManager());
+		/*fpsText = new Text(0,10,font.get(30, Color.WHITE),String.format("%03d", 0),getVertexBufferObjectManager());
 		fpsText.setX(MenuActivity.SCREENWIDTH - fpsText.getWidth() - 15);
-		mScene.attachChild(fpsText);
+		mScene.attachChild(fpsText);*/
 		
 		mScene.registerUpdateHandler(this.mPhysicsWorld);
 		this.getEngine().registerUpdateHandler(new IUpdateHandler() {
@@ -594,10 +603,10 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 
             @Override
             public void onUpdate(final float pSecondsElapsed) {
-            	if(fpsText != null) {
+            	/*if(fpsText != null) {
         			fpsText.setText(String.format("%03d", (int)fpsLogger.getFPS()));
         			fpsLogger.reset();
-        		}
+        		}*/
             	
             	tickLoop();
             }
@@ -889,10 +898,12 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
     			if(flag_allempty) {
 					gameEnded=true;
 		        	SharedPreferences settings = getSharedPreferences(MenuActivity.PREFS_NAME, 0);
-		        	if(settings.getInt("maxLevel", 1)==1) // First victory
-		        		GiftizSDK.missionComplete(this);
+		        	if(settings.getInt("giftizMissionStatus", 0)==0) {// First victory 
+		        		Editor editor = settings.edit();
+		        		editor.putInt("giftizMissionStatus", 1);
+		        		editor.commit();
+		        	}
 		        	
-
 					if(mLevel+1<=LevelManager.MAX_LEVEL) {
 			        	Intent intent = new Intent(GameActivity.this, GameActivity.class);
 			        	intent.putExtra(MenuActivity.LEVEL, mLevel+1);

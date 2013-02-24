@@ -64,6 +64,7 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 	private TextureRegion mGiftizLogoBadgeTextureRegion;
 	private Sprite giftizButton;
 	protected boolean buttonClicked;
+	private TextureRegion mGiftizNullTextureRegion;
 	
     public static final String PREFS_NAME = "PacmanPrefs";
     public final static String LEVEL = "com.lortexgames.pokman.LEVEL";
@@ -93,6 +94,10 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 			ITexture giftizLogoWarningTexture = new BitmapTexture(this.getTextureManager(), new IInputStreamOpener() {@Override public InputStream open() throws IOException { return getAssets().open("gfx/giftiz_logo_warning.png");} });
 			giftizLogoWarningTexture.load();
 			this.mGiftizLogoWarningTextureRegion = TextureRegionFactory.extractFromTexture(giftizLogoWarningTexture);
+			
+			ITexture giftizNullTexture = new BitmapTexture(this.getTextureManager(), new IInputStreamOpener() {@Override public InputStream open() throws IOException { return getAssets().open("gfx/giftiz_null.png");} });
+			giftizNullTexture.load();
+			this.mGiftizNullTextureRegion = TextureRegionFactory.extractFromTexture(giftizNullTexture);
 			
 			
 			
@@ -320,60 +325,40 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 		};
 
 		GiftizSDK.Inner.setButtonNeedsUpdateDelegate(this);
-		TextureRegion giftizSelectedTexture=null;		
-		boolean giftizButtonEnabled;
-		switch(GiftizSDK.Inner.getButtonStatus(this)) {
-		case ButtonBadge:
-			giftizButtonEnabled=true;
-			giftizSelectedTexture=mGiftizLogoBadgeTextureRegion;
-			break;
-		case ButtonInvisible:
-			giftizButtonEnabled=false;
-			break;
-		case ButtonNaked:
-			giftizButtonEnabled=true;
-			giftizSelectedTexture=mGiftizLogoTextureRegion;
-			break;
-		case ButtonWarning:
-			giftizButtonEnabled=true;
-			giftizSelectedTexture=mGiftizLogoWarningTextureRegion;
-			break;
-		default:
-			giftizButtonEnabled=false;
-			break;
-		}
+		TextureRegion giftizSelectedTexture=giftizTextureRegion();		
+		
+		
 
-		giftizButton=null;
 		buttonClicked=false;
-		if(giftizButtonEnabled){
-			giftizButton = new Sprite(0,0,giftizSelectedTexture,this.getVertexBufferObjectManager()) {
-				@Override
-			    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
-					if ((pSceneTouchEvent.isActionDown())||(pSceneTouchEvent.isActionMove())) {
-						if(buttonClicked != true) {
-							giftizButton.setY(giftizButton.getY()-5);
-							giftizButton.setX(giftizButton.getX()-5);
-							buttonClicked = true;
-						}
+		
+		giftizButton = new Sprite(0,0,giftizSelectedTexture,this.getVertexBufferObjectManager()) {
+			@Override
+		    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
+				if ((pSceneTouchEvent.isActionDown())||(pSceneTouchEvent.isActionMove())) {
+					if(buttonClicked != true) {
+						giftizButton.setY(giftizButton.getY()-5);
+						giftizButton.setX(giftizButton.getX()-5);
+						buttonClicked = true;
 					}
-			        else if(pSceneTouchEvent.isActionUp()) {
-			        	if(hapticFeedback) {
-				        	Vibrator v = (Vibrator) MenuActivity.this.getApplicationContext().getSystemService(Service.VIBRATOR_SERVICE);
-				        	v.vibrate(100);
-			        	}
-			        	GiftizSDK.Inner.buttonClicked(MenuActivity.this);
-			        	this.setColor(1f,1f,1f);
-						giftizButton.setY(giftizButton.getY()+5);
-						giftizButton.setX(giftizButton.getX()+5);
-						buttonClicked = false;
-			        }
-			        return true;
-			    }
-			};
-			giftizButton.setScale(1.5f);
-			giftizButton.setY(quit.getY()-(giftizButton.getHeight()-quit.getHeight())/2f);
-			giftizButton.setX(options.getX()+options.getWidth()-giftizButton.getWidth());
-		}
+				}
+		        else if(pSceneTouchEvent.isActionUp()) {
+		        	if(hapticFeedback) {
+			        	Vibrator v = (Vibrator) MenuActivity.this.getApplicationContext().getSystemService(Service.VIBRATOR_SERVICE);
+			        	v.vibrate(100);
+		        	}
+		        	GiftizSDK.Inner.buttonClicked(MenuActivity.this);
+		        	this.setColor(1f,1f,1f);
+					giftizButton.setY(giftizButton.getY()+5);
+					giftizButton.setX(giftizButton.getX()+5);
+					buttonClicked = false;
+		        }
+		        return true;
+		    }
+		};
+		giftizButton.setScale(1.5f);
+		giftizButton.setY(quit.getY()-10);
+		giftizButton.setX(options.getX()+options.getWidth()-giftizButton.getWidth());
+		
 		
 		scene.attachChild(play);
 		scene.attachChild(options);
@@ -413,13 +398,37 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 		return scene;
 	}
 
+	private TextureRegion giftizTextureRegion() {
+		TextureRegion giftizSelectedTexture=null;
+		switch(GiftizSDK.Inner.getButtonStatus(this)) {
+		case ButtonBadge:
+			giftizSelectedTexture=mGiftizLogoBadgeTextureRegion;
+			break;
+		case ButtonInvisible:
+			giftizSelectedTexture=mGiftizNullTextureRegion;
+			break;
+		case ButtonNaked:
+			giftizSelectedTexture=mGiftizLogoTextureRegion;
+			break;
+		case ButtonWarning:
+			giftizSelectedTexture=mGiftizLogoWarningTextureRegion;
+			break;
+		default:
+			giftizSelectedTexture=mGiftizNullTextureRegion;
+			break;
+		}
+		return giftizSelectedTexture;
+	}
+
 	@Override
 	public void buttonNeedsUpdate() {
+		giftizButton.setTextureRegion(giftizTextureRegion());
 	}
+	
 	@Override
 	public void onPause() {
-		GiftizSDK.onPauseMainActivity(this); 
 		super.onPause();
+		GiftizSDK.onPauseMainActivity(this); 
 	}
 	
 	@Override

@@ -14,43 +14,43 @@ public class LevelManager {
 	public void loadValues() {
 		LevelSet level1 = new LevelSet();
 		level1.maxWallLenght=7;
-		level1.ghostAttractDivFactor=4f;
-		level1.ghostGravityScale=0.85f;
+		level1.ghostAttractDivFactor=10000f;
+		level1.ghostGravityScale=0.4f;
 		level1.pacmanGravityScale=1.1f;
 		
 		LevelSet level2 = new LevelSet();
-		level2.ghostGravityScale=0.8f;
-		level2.pacmanGravityScale=1.2f;
-		level2.ghostAttractDivFactor=3.5f;
 		level2.maxWallLenght=5;
+		level2.ghostAttractDivFactor=10000f;
+		level2.ghostGravityScale=0.7f;
+		level2.pacmanGravityScale=1.2f;
 		
 		LevelSet level3 = new LevelSet();
-		level3.maxWallLenght=3;
-		level3.ghostAttractDivFactor=3f;
-		level3.ghostGravityScale=0.9f;
-		level3.pacmanGravityScale=1.2f;
+		level3.maxWallLenght=9;
+		level3.ghostAttractDivFactor=100f;
+		level3.ghostGravityScale=0.8f;
+		level3.pacmanGravityScale=1.5f;
 		
 		LevelSet level4 = new LevelSet();
 		level4.maxWallLenght=5;
-		level4.ghostAttractDivFactor=3f;
-		level4.ghostGravityScale=1f;
-		level4.pacmanGravityScale=1f;
+		level4.ghostAttractDivFactor=15f;
+		level4.ghostGravityScale=0.9f;
+		level4.pacmanGravityScale=1.1f;
 		
 		LevelSet level5 = new LevelSet();
-		level5.maxWallLenght=1;
-		level5.ghostAttractDivFactor=2f;
+		level5.maxWallLenght=3;
+		level5.ghostAttractDivFactor=10f;
 		level5.ghostGravityScale=0.2f;
-		level5.pacmanGravityScale=1f;
+		level5.pacmanGravityScale=1.1f;
 		
 		LevelSet level6 = new LevelSet();
-		level6.maxWallLenght=9;
-		level6.ghostAttractDivFactor=3f;
+		level6.maxWallLenght=11;
+		level6.ghostAttractDivFactor=5f;
 		level6.ghostGravityScale=1f;
 		level6.pacmanGravityScale=1.2f;
 		
 		LevelSet level7 = new LevelSet();
 		level7.maxWallLenght=5;
-		level7.ghostAttractDivFactor=4f;
+		level7.ghostAttractDivFactor=20f;
 		level7.ghostGravityScale=1.2f;
 		level7.pacmanGravityScale=1f;
 		
