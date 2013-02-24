@@ -7,4 +7,6 @@ public class LevelSet {
 	public float pacmanGravityScale=1f;
 	public float ghostAttractDivFactor=4.5f;
 	public int maxWallLenght=5;
+	public int winPoints=1000;
+	public int pointValue=10;
 }

@@ -187,7 +187,9 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 		                            @Override
 		                            public void onClick(DialogInterface dialog, int whichButton) {
 		                            	Intent intent = new Intent(MenuActivity.this, GameActivity.class);
-		            		        	intent.putExtra(LEVEL, seekbar.getProgress()+1);
+		                            	intent.putExtra(LEVEL, seekbar.getProgress()+1);
+		                            	intent.putExtra(GameActivity.NVIES, 3);
+		                            	
 		            		        	Editor edit = settings.edit();
 		            		        	edit.putInt("startLevel", seekbar.getProgress()+1);
 		            		        	edit.commit();

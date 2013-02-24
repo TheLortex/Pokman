@@ -89,6 +89,7 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 
 	private int nVies = 3;
 	private int mScore = 0;
+	private int mPointValue = 10;
 
 	private int spawnPacX, spawnPacY;
 	private int spawnGhostX=-1, spawnGhostY=-1;
@@ -157,14 +158,15 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 	private Text menuText;
 	private FontManager font;
 	private FPSLogger fpsLogger;
-	private Text fpsText;
+//	private Text fpsText;
 	protected float mGhostGravityScale;
 	private float mPacmanGravityScale;
 	private float mGhostAttractDivFactor;
+	private int mWinPoints;
 	
 	@Override
 	public EngineOptions onCreateEngineOptions() {
-		Debug.i("Creating engine");
+		//Debug.i("Creating engine");
 		font = new FontManager(this);
 		
 		Intent intent = getIntent();
@@ -331,17 +333,16 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 
 	private void getLevelValues() {
 		LevelManager lvl = new LevelManager();
-		Debug.i("LEVEL "+mLevel);
 		LevelSet values = lvl.get(mLevel);
 		this.mGhostAttractDivFactor=values.ghostAttractDivFactor;
 		this.mGhostGravityScale=values.ghostGravityScale;
 		this.mPacmanGravityScale=values.pacmanGravityScale;
+		this.mPointValue=values.pointValue;
+		this.mWinPoints=values.winPoints;
 	}
 
 	@Override
 	protected Scene onCreateScene() {
-		Debug.i("Creating scene");
-		
 		AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
 		float actualVolume = (float) audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
 		float maxVolume = (float) audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
@@ -728,7 +729,19 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		// Pacman lives
 		if(pacLives.size() < nVies) {
 			for(int i=pacLives.size(); i<nVies;i++) {
-				Sprite liveIcon = new Sprite(30+i*(mPacmanTextureRegion.getWidth()+10),HUD_HEIGHT/2-mPacmanTextureRegion.getWidth()/2,mPacmanTextureRegion,getVertexBufferObjectManager());
+				float y=0;
+				if(nVies <= 4)
+					y=HUD_HEIGHT/2-mPacmanTextureRegion.getHeight()/2;
+				else
+					y=HUD_HEIGHT/2-mPacmanTextureRegion.getHeight()-5;
+				
+				float x=30+i*(mPacmanTextureRegion.getWidth()+10);
+				if(i>3) {
+					y+= mPacmanTextureRegion.getHeight() + 10;
+					x-=4*(mPacmanTextureRegion.getWidth()+10);
+				}
+				
+				Sprite liveIcon = new Sprite(x,y,mPacmanTextureRegion,getVertexBufferObjectManager());
 				scene.attachChild(liveIcon);
 				pacLives.add(liveIcon);
 			}
@@ -867,7 +880,7 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
     			points.get(pacManX).get(pacManY).detachSelf();
     			points.get(pacManX).remove(pacManY);
     			
-    			mScore += 10;
+    			mScore += mPointValue;
     			if(!isPocoing) {
     				isPocoing = true;
         			soundPool.play(idPoco, percentageGfx*volume, percentageGfx*volume, 1, 0, 1f);
@@ -903,6 +916,8 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		        		editor.putInt("giftizMissionStatus", 1);
 		        		editor.commit();
 		        	}
+
+		        	mScore += mWinPoints;
 		        	
 					if(mLevel+1<=LevelManager.MAX_LEVEL) {
 			        	Intent intent = new Intent(GameActivity.this, GameActivity.class);
@@ -915,8 +930,10 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 			        		editor.commit();
 				        	this.toastOnUIThread("LEVEL UP");
 			        	}
-			        	if(nVies+1<=5)
+			        	
+			        	if(nVies+1<=8)
 			        		intent.putExtra(NVIES, nVies+1);
+			        		
 						startActivityForResult(intent, 1);
 	    				finish();
 					} else {

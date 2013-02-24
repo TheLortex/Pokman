@@ -20,7 +20,6 @@ import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.texture.region.TextureRegionFactory;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.util.adt.io.in.IInputStreamOpener;
-import org.andengine.util.debug.Debug;
 
 import android.app.AlertDialog;
 import android.app.Service;
@@ -92,7 +91,6 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 			mSoundPool.setOnLoadCompleteListener(new OnLoadCompleteListener() {
 				@Override
 				public void onLoadComplete(SoundPool arg0, int arg1, int arg2) {
-					Debug.i("Soundpool loaded "+arg1);
 					mSoundPool.play(idDeath, percentageGfx*volume, percentageGfx*volume, 1, 0, 1f);
 				}
 			});
@@ -162,7 +160,7 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 		getHighScores(score);
 		
 		if(isBetter) {
-			enterName = new Text(0,scoreText.getX() + 220,font.get(42, Color.WHITE),"Enter name",this.getVertexBufferObjectManager()) {
+			enterName = new Text(0,scoreText.getY() + 220,font.get(42, Color.WHITE),"Enter name",this.getVertexBufferObjectManager()) {
 			    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
 					if ((pSceneTouchEvent.isActionDown())||(pSceneTouchEvent.isActionMove()))
 			        	this.setColor(1f,1f,0f);

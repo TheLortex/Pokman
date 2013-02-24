@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.lortexgames.pokman"
-    android:versionCode="700"
+    android:versionCode="708"
     android:versionName="bêta0.6.0"
     android:installLocation="auto" >
 
