@@ -149,7 +149,9 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 	private int mBonusActivated;
 	private TextureRegion mGhostEyesTextureRegion;
 	private Text levelText;
-	private Rectangle readyTextBackground;
+	private Sprite readyTextBackground;
+	private Sprite startArrowSprite=null;
+	
 	private TextureRegion mGhostEyesInvTextureRegion;
 	private boolean autoCalibration;
 
@@ -163,6 +165,9 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 	private float mPacmanGravityScale;
 	private float mGhostAttractDivFactor;
 	private int mWinPoints;
+	private TextureRegion mStartTextBackgroundTextureRegion;
+	private boolean mFirstTime;
+	private TextureRegion mStartArrowTextureRegion;
 	
 	@Override
 	public EngineOptions onCreateEngineOptions() {
@@ -283,6 +288,8 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 			ITexture pointTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/point.png");}});
 			ITexture pacmanTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/newgfx/pacman.png");}});
 			ITexture popupBackgroundTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/bg_popup.png");}});
+			ITexture startTextBackgroundTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/bg_start_text.png");}});
+			ITexture startArrowTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/arrow.png");}});
 			
 			pacmanMangeTexture.load();
 			redGhostTexture.load();
@@ -297,6 +304,8 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 			pointTexture.load();
 			pacmanTexture.load();
 			popupBackgroundTexture.load();
+			startTextBackgroundTexture.load();
+			startArrowTexture.load();
 			
 			mPacmanMangeTextureRegion = TextureRegionFactory.extractFromTexture(pacmanMangeTexture);
 			mRedGhostTextureRegion = TextureRegionFactory.extractFromTexture(redGhostTexture);
@@ -311,6 +320,8 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 			mPointTextureRegion = TextureRegionFactory.extractFromTexture(pointTexture);
 			mPacmanTextureRegion = TextureRegionFactory.extractFromTexture(pacmanTexture);
 			mPopupBackgroundTextureRegion = TextureRegionFactory.extractFromTexture(popupBackgroundTexture);
+			mStartTextBackgroundTextureRegion = TextureRegionFactory.extractFromTexture(startTextBackgroundTexture);
+			mStartArrowTextureRegion = TextureRegionFactory.extractFromTexture(startArrowTexture);
 			
 			
 		} catch (IOException e1) {
@@ -321,6 +332,7 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		font.load(31, Color.YELLOW);
 		font.load(66, Color.WHITE);
 		font.load(48, Color.WHITE);
+		font.load(40, Color.WHITE);
 		
 		try {
 			tileMapper.loadTextures();
@@ -352,35 +364,22 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		int duration = audio.getDuration() + 100;
 		audio.release();
 
+		SharedPreferences settings = this.getSharedPreferences(MenuActivity.PREFS_NAME, 0);
+		mFirstTime=settings.getBoolean("firstPlay", true);
+		Editor editor = settings.edit();
+		editor.putBoolean("firstPlay", false);
+		editor.commit();
+
+		if(mFirstTime)
+			duration = 5000;
 		
 		new Timer().schedule(new TimerTask() {
-
 			@Override
 			public void run() {
-				Iterator<Body> it=ghosts.keySet().iterator(); 
-				while(it.hasNext()) 
-					it.next().setGravityScale(mGhostGravityScale);
-				
-				readyText.setAlpha(0f);
-				readyTextBackground.setAlpha(0f);
-				pacman.setGravityScale(1f);
-
-				/*if((percentageMusic>0)&&(!paused))
-					soundPool.play(idSiren, percentageMusic*volume, percentageMusic*volume, 1, -1, 1f);
-				*/
-				
-				update=true;
-				new Timer().schedule(new TimerTask() {
-
-					@Override
-					public void run() {
-						levelText.setText("LEVEL "+mLevel);
-						levelText.setX((float) ((fScoreText.getWidth() + fScoreText.getX()) + ((MenuActivity.SCREENWIDTH - fScoreText.getWidth() - fScoreText.getX())/2.0) - levelText.getWidth()/2.0));
-						levelText.setAlpha(1f);
-					}
-				}, 1000);
+				startGame();
 			}
 		}, duration);
+		
 		
 		
 		mScene = new Scene();
@@ -585,12 +584,12 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 				}
 			}
 		});
-		SharedPreferences settings = this.getSharedPreferences(MenuActivity.PREFS_NAME, 0);
+
     	if(settings.getInt("giftizMissionStatus", 0)==1) {// First victory 
     		GiftizSDK.missionComplete(this);
-    		Editor editor = settings.edit();
-    		editor.putInt("giftizMissionStatus", 2);
-    		editor.commit();
+    		Editor editor2 = settings.edit();
+    		editor2.putInt("giftizMissionStatus", 2);
+    		editor2.commit();
     	}
 		
 		/*fpsText = new Text(0,10,font.get(30, Color.WHITE),String.format("%03d", 0),getVertexBufferObjectManager());
@@ -615,6 +614,25 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		mScene.sortChildren();
 		return mScene;
 	}
+	protected void startGame() {
+		Iterator<Body> it=ghosts.keySet().iterator(); 
+		while(it.hasNext()) 
+			it.next().setGravityScale(mGhostGravityScale);
+		
+		readyText.setAlpha(0f);
+		readyTextBackground.setAlpha(0f);
+		pacman.setGravityScale(1f);
+
+		/*if((percentageMusic>0)&&(!paused))
+			soundPool.play(idSiren, percentageMusic*volume, percentageMusic*volume, 1, -1, 1f);
+		*/
+		
+		if(startArrowSprite!=null)
+			startArrowSprite.setAlpha(0f);
+		
+		update=true;
+	}
+
 	@Override
 	public void onResumeGame() {
 		sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
@@ -771,22 +789,34 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		
 		//Ready text
 		if(levelText == null) {
-			levelText = new Text(0,65,this.font.get(31, Color.YELLOW),"LEVEL 999",getVertexBufferObjectManager());
+			levelText = new Text(0,65,this.font.get(31, Color.YELLOW),"LEVEL "+mLevel,getVertexBufferObjectManager());
 			levelText.setX((float) ((fScoreText.getWidth() + fScoreText.getX()) + ((MenuActivity.SCREENWIDTH - fScoreText.getWidth() - fScoreText.getX())/2.0) - levelText.getWidth()/2.0));
-			levelText.setAlpha(0f);
-			scene.attachChild(levelText);
-
 			
-			readyText = new Text(0,0,font.get(66, Color.WHITE),"GET READY",getVertexBufferObjectManager());
+			scene.attachChild(levelText);
+			
+			
+			if(mFirstTime) {
+				startArrowSprite = new Sprite(MenuActivity.SCREENWIDTH/2f+60,MenuActivity.SCREENHEIGHT/2f-mStartArrowTextureRegion.getHeight()+20,mStartArrowTextureRegion,this.getVertexBufferObjectManager());
+				scene.attachChild(startArrowSprite);
+			}
+
+			String readyTextMsg=mFirstTime?"You are here !":"GET READY";
+			
+			readyText = new Text(0,0,font.get(mFirstTime?40:66, Color.WHITE),readyTextMsg,getVertexBufferObjectManager());
 			readyText.setColor(1f,1f,0f);
 			readyText.setX(MenuActivity.SCREENWIDTH/2f - readyText.getWidth()/2f);
-			readyText.setY(MenuActivity.SCREENHEIGHT/2f - readyText.getHeight()/2f);
+			if(mFirstTime)
+				readyText.setY(MenuActivity.SCREENHEIGHT - readyText.getHeight() - 300);
+			else 
+				readyText.setY(MenuActivity.SCREENHEIGHT/2f - readyText.getHeight()/2f);
+			
+			
 			readyText.setAlpha(0f);
 			readyText.setZIndex(1500);
 			
-			readyTextBackground = new Rectangle(readyText.getX()-15,readyText.getY()-15,readyText.getWidth()+30,readyText.getHeight()+30,getVertexBufferObjectManager());
+			readyTextBackground = new Sprite(readyText.getX()+readyText.getWidth()/2f-mStartTextBackgroundTextureRegion.getWidth()/2f,readyText.getY()+readyText.getHeight()/2f-mStartTextBackgroundTextureRegion.getHeight()/2f,this.mStartTextBackgroundTextureRegion,this.getVertexBufferObjectManager());
+			
 			readyTextBackground.setAlpha(0f);
-			readyTextBackground.setColor(0f,0f,0f);
 			readyTextBackground.setZIndex(1000);
 			scene.attachChild(readyTextBackground);
 			scene.attachChild(readyText);
