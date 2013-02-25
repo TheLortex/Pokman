@@ -2,6 +2,9 @@ package com.lortexgames.pokman;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.andengine.engine.camera.Camera;
 import org.andengine.engine.options.EngineOptions;
@@ -20,6 +23,19 @@ import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.texture.region.TextureRegionFactory;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.util.adt.io.in.IInputStreamOpener;
+import org.andengine.util.debug.Debug;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import android.app.AlertDialog;
 import android.app.Service;
@@ -32,6 +48,9 @@ import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.media.SoundPool.OnLoadCompleteListener;
+import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Vibrator;
 import android.provider.Settings;
 import android.provider.Settings.System;
@@ -58,13 +77,37 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 	private TextureRegion mHighScoreBGTextureRegion;
 
 	private SparseArray<Pair<Integer, String>> scoreList;
+	private SparseArray<Pair<Integer, String>> onlineScoreList;
+	
 	private boolean isBetter=false;
 	private int modifying=-1;
+	
+	private boolean onlineBetter;
+	private int onlineModifying=-1;
 
 	private Text enterName=null;
 	private Text modifiableText=null;
+	private Text onlineModifiableText=null;
 
 	private int level;
+
+	public boolean scoreUpload;
+	
+	DefaultHttpClient client = new DefaultHttpClient();
+	ResponseHandler<String> responseHandler = new BasicResponseHandler();
+	String response = "";
+
+	private Scene mScene;
+	private Handler asyncTaskHandler ;
+
+	private Line leftBorderEN;
+
+	private Line rightBorderEN;
+
+	private Line highBorderEN;
+
+	private Line lowBorderEN;
+
 
 	@Override
 	public EngineOptions onCreateEngineOptions() {
@@ -119,7 +162,11 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 		font.load(60, Color.WHITE);
 		font.load(50, Color.WHITE);
 		font.load(42, Color.WHITE);
+		font.load(48, Color.WHITE);
+		font.load(30, Color.WHITE);
 		font.load(50, Color.YELLOW);
+		
+		asyncTaskHandler = new Handler(Looper.getMainLooper());
 	}
 
 	@Override
@@ -130,134 +177,140 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 	
 	@Override
 	protected Scene onCreateScene() {
-		Scene scene = new Scene();
-		scene.setBackground(new Background(0f,0f,0f));
+		mScene = new Scene();
+		mScene.setBackground(new Background(0f,0f,0f));
 		
 		final boolean hapticFeedback = System.getInt(this.getContentResolver(), Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) != 0;
 		
 		String message = win ? "WIN" : "GAME OVER";
 		Text titleText = new Text(0,70,font.get(60, Color.WHITE),message,this.getVertexBufferObjectManager());
 		titleText.setX(MenuActivity.SCREENWIDTH/2f - titleText.getWidth()/2f);
-		scene.attachChild(titleText);
+		mScene.attachChild(titleText);
 		
 		Text levelMessage = new Text(0,140+titleText.getHeight(),font.get(50, Color.WHITE),"LEVEL ",this.getVertexBufferObjectManager());
 		levelMessage.setX(MenuActivity.SCREENWIDTH/2f - levelMessage.getWidth()/2f - 50);
-		scene.attachChild(levelMessage);
+		mScene.attachChild(levelMessage);
 		
 		Text levelText = new Text(levelMessage.getX() + levelMessage.getWidth() + 20,140+titleText.getHeight(),font.get(50, Color.YELLOW),""+level,this.getVertexBufferObjectManager());
 
-		scene.attachChild(levelText);
+		mScene.attachChild(levelText);
 		
 		Text scoreMessage = new Text(0,300,font.get(50, Color.WHITE),"SCORE:",this.getVertexBufferObjectManager());
 		scoreMessage.setX(MenuActivity.SCREENWIDTH/2f - scoreMessage.getWidth()/2f);
-		scene.attachChild(scoreMessage);
+		mScene.attachChild(scoreMessage);
 		
 		Text scoreText = new Text(0,370,font.get(50, Color.YELLOW),""+score,this.getVertexBufferObjectManager());
 		scoreText.setX(MenuActivity.SCREENWIDTH/2f - scoreText.getWidth()/2f);
-		scene.attachChild(scoreText);
+		mScene.attachChild(scoreText);
 
 		scoreList = new SparseArray<Pair<Integer,String>>();
+		onlineScoreList = new SparseArray<Pair<Integer,String>>();
 		getHighScores(score);
 		
-		if(isBetter) {
-			enterName = new Text(0,scoreText.getY() + 220,font.get(42, Color.WHITE),"Enter name",this.getVertexBufferObjectManager()) {
-			    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
-					if ((pSceneTouchEvent.isActionDown())||(pSceneTouchEvent.isActionMove()))
-			        	this.setColor(1f,1f,0f);
-			        else if(pSceneTouchEvent.isActionUp()) {
-			        	if(hapticFeedback) {
-				        	Vibrator v = (Vibrator) EndGameActivity.this.getApplicationContext().getSystemService(Service.VIBRATOR_SERVICE);
-				        	v.vibrate(100);
-			        	}
-			        	EndGameActivity.this.runOnUiThread(new Runnable() {
-	
-							@Override
-							public void run() {
-								final AlertDialog.Builder alert = new AlertDialog.Builder(EndGameActivity.this);
-					        	 
-			                    alert.setTitle("");
-			                    alert.setMessage("OMG BEST SCORE");
-	
-			                    final EditText editText = new EditText(EndGameActivity.this);
-			                    editText.setTextSize(20f);
-			                    
-			                    InputFilter[] FilterArray = new InputFilter[1];
-			                    FilterArray[0] = new InputFilter.LengthFilter(9);
-	
-			                    editText.setFilters(FilterArray);
-			                    
-			                    if(getText() != "Enter name")
-				                    editText.setText(getText());
-			                    else 
-				                    editText.setText("");
-			                    
-			                    editText.setGravity(Gravity.CENTER_HORIZONTAL);
-			                   
-			                    editText.setHint(R.string.hinthighscore);
-			                    
-			                    alert.setView(editText);
-	
-			                    alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-		                            @Override
-		                            public void onClick(DialogInterface dialog, int whichButton) {
-		                            	scoreList.put(modifying, new Pair<Integer,String>(score,editText.getText().toString()));
-		                            	setText(editText.getText().toString());
-		                            	
-		                    			int curScore = scoreList.get(modifying).first;
-		                    			String curName = scoreList.get(modifying).second;
-		                    			
-		                    			String curScoreText = curScore+"";
-		                    			String space = "";
-		                    			for(int j=0;j<15-curScoreText.length()-curName.length();j++)
-		                    				space = space + " ";
-		                    			
-		                    			modifiableText.setText(curName + space + curScoreText);
-		                    			
-		                            }
-			                    });
-	
-			                    alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-		                            @Override
-		                            public void onClick(DialogInterface dialog, int whichButton) {
-		                            }
-			                    });
-	
-			                    final AlertDialog dialog = alert.create();
-			                    dialog.setOnShowListener(new OnShowListener() {
-		                            @Override
-		                            public void onShow(DialogInterface dialog) {
-	                                    editText.requestFocus();
-	                                    final InputMethodManager imm = (InputMethodManager) EndGameActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
-	                                    imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
-		                            }
-			                    });
-			                    dialog.show();
-							}
-			        		
-			        	});
-			        	
-			        	this.setColor(1f,1f,1f);
-			        }
-			        return true;
-			    }
-			};
-			enterName.setX(MenuActivity.SCREENWIDTH/2f - enterName.getWidth()/2f);
-			scene.attachChild(enterName);
-			scene.registerTouchArea(enterName);
-			
-			final int padding = 30;
-			
-			Line leftBorderEN = new Line(enterName.getX() - padding, enterName.getY() - padding, enterName.getX() - padding, enterName.getY() + enterName.getHeight() + padding, this.getVertexBufferObjectManager());
-			Line rightBorderEN = new Line(MenuActivity.SCREENWIDTH - enterName.getX() + padding, enterName.getY() - padding, MenuActivity.SCREENWIDTH - enterName.getX() + padding, enterName.getY() + enterName.getHeight() + padding, this.getVertexBufferObjectManager());
-			Line highBorderEN = new Line(enterName.getX() - padding, enterName.getY() - padding, MenuActivity.SCREENWIDTH - enterName.getX() + padding, enterName.getY() - padding, this.getVertexBufferObjectManager());
-			Line lowBorderEN = new Line(enterName.getX() - padding,  enterName.getY() + enterName.getHeight() + padding, MenuActivity.SCREENWIDTH - enterName.getX() + padding, enterName.getY() + enterName.getHeight() + padding, this.getVertexBufferObjectManager());
-			
-	
-			scene.attachChild(leftBorderEN);
-			scene.attachChild(rightBorderEN);
-			scene.attachChild(highBorderEN);
-			scene.attachChild(lowBorderEN);
-		}
+		enterName = new Text(0,scoreText.getY() + 220,font.get(42, Color.WHITE),"Enter name",this.getVertexBufferObjectManager()) {
+		    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
+				if ((pSceneTouchEvent.isActionDown())||(pSceneTouchEvent.isActionMove()))
+		        	this.setColor(1f,1f,0f);
+		        else if(pSceneTouchEvent.isActionUp()) {
+		        	if(hapticFeedback) {
+			        	Vibrator v = (Vibrator) EndGameActivity.this.getApplicationContext().getSystemService(Service.VIBRATOR_SERVICE);
+			        	v.vibrate(100);
+		        	}
+		        	EndGameActivity.this.runOnUiThread(new Runnable() {
+
+						@Override
+						public void run() {
+							final AlertDialog.Builder alert = new AlertDialog.Builder(EndGameActivity.this);
+				        	 
+		                    alert.setTitle("");
+		                    alert.setMessage("OMG BEST SCORE");
+
+		                    final EditText editText = new EditText(EndGameActivity.this);
+		                    editText.setTextSize(20f);
+		                    
+		                    InputFilter[] FilterArray = new InputFilter[1];
+		                    FilterArray[0] = new InputFilter.LengthFilter(9);
+
+		                    editText.setFilters(FilterArray);
+		                    
+		                    if(getText() != "Enter name")
+			                    editText.setText(getText());
+		                    else 
+			                    editText.setText("");
+		                    
+		                    editText.setGravity(Gravity.CENTER_HORIZONTAL);
+		                   
+		                    editText.setHint(R.string.hinthighscore);
+		                    
+		                    alert.setView(editText);
+
+		                    alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+	                            @Override
+	                            public void onClick(DialogInterface dialog, int whichButton) {
+	                            	scoreList.put(modifying, new Pair<Integer,String>(score,editText.getText().toString()));
+	                            	onlineScoreList.put(onlineModifying, new Pair<Integer,String>(score,editText.getText().toString()));
+	                            	setText(editText.getText().toString());
+	                            	
+	                    			int curScore = scoreList.get(modifying).first;
+	                    			String curName = scoreList.get(modifying).second;
+	                    			
+	                    			String curScoreText = curScore+"";
+	                    			String space = "";
+	                    			for(int j=0;j<15-curScoreText.length()-curName.length();j++)
+	                    				space = space + " ";
+	                    			
+	                    			if(modifiableText!=null)
+	                    				modifiableText.setText(curName + space + curScoreText);
+	                    			if(onlineModifiableText!=null)
+	                    				onlineModifiableText.setText(curName + space + curScoreText);
+	                            }
+		                    });
+
+		                    alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+	                            @Override
+	                            public void onClick(DialogInterface dialog, int whichButton) {
+	                            }
+		                    });
+
+		                    final AlertDialog dialog = alert.create();
+		                    dialog.setOnShowListener(new OnShowListener() {
+	                            @Override
+	                            public void onShow(DialogInterface dialog) {
+                                    editText.requestFocus();
+                                    final InputMethodManager imm = (InputMethodManager) EndGameActivity.this.getSystemService(Context.INPUT_METHOD_SERVICE);
+                                    imm.showSoftInput(editText, InputMethodManager.SHOW_IMPLICIT);
+	                            }
+		                    });
+		                    dialog.show();
+						}
+		        		
+		        	});
+		        	
+		        	this.setColor(1f,1f,1f);
+		        }
+		        return true;
+		    }
+		};
+		enterName.setX(MenuActivity.SCREENWIDTH/2f - enterName.getWidth()/2f);
+		mScene.attachChild(enterName);
+		mScene.registerTouchArea(enterName);
+		
+		final int padding = 30;
+		
+		leftBorderEN = new Line(enterName.getX() - padding, enterName.getY() - padding, enterName.getX() - padding, enterName.getY() + enterName.getHeight() + padding, this.getVertexBufferObjectManager());
+		rightBorderEN = new Line(MenuActivity.SCREENWIDTH - enterName.getX() + padding, enterName.getY() - padding, MenuActivity.SCREENWIDTH - enterName.getX() + padding, enterName.getY() + enterName.getHeight() + padding, this.getVertexBufferObjectManager());
+		highBorderEN = new Line(enterName.getX() - padding, enterName.getY() - padding, MenuActivity.SCREENWIDTH - enterName.getX() + padding, enterName.getY() - padding, this.getVertexBufferObjectManager());
+		lowBorderEN = new Line(enterName.getX() - padding,  enterName.getY() + enterName.getHeight() + padding, MenuActivity.SCREENWIDTH - enterName.getX() + padding, enterName.getY() + enterName.getHeight() + padding, this.getVertexBufferObjectManager());
+		
+
+		mScene.attachChild(leftBorderEN);
+		mScene.attachChild(rightBorderEN);
+		mScene.attachChild(highBorderEN);
+		mScene.attachChild(lowBorderEN);
+		
+		if(!isBetter)
+			activateInput(false);
+		
 		
 		// Buttons
 		
@@ -283,7 +336,7 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 		    }
 		};
 		returnButton.setX(MenuActivity.SCREENWIDTH/2f - returnButton.getWidth()/2f);
-		scene.attachChild(returnButton);
+		mScene.attachChild(returnButton);
 		
 		menuButton = new Text(0,MenuActivity.SCREENHEIGHT / 2f + returnButton.getHeight() + 200,font.get(50, Color.WHITE),"MENU",this.getVertexBufferObjectManager()) {
 			@Override
@@ -306,24 +359,31 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 		    }
 		};
 		menuButton.setX(MenuActivity.SCREENWIDTH/2f - menuButton.getWidth()/2f);
-		scene.attachChild(menuButton);
+		mScene.attachChild(menuButton);
 
-		scene.registerTouchArea(menuButton);
-		scene.registerTouchArea(returnButton);
+		mScene.registerTouchArea(menuButton);
+		mScene.registerTouchArea(returnButton);
 		
-
+		Text infoText = new Text(0,0,font.get(30, Color.WHITE),"Swipe to see high scores",this.getVertexBufferObjectManager());
+		infoText.setX(MenuActivity.SCREENWIDTH/2f - infoText.getWidth()/2f);
+		infoText.setY(MenuActivity.SCREENHEIGHT - infoText.getHeight() - 30);
+		mScene.attachChild(infoText);
 		
-		// Scene HIGH SCORE
+		// Scene HIGH SCORE local
 		
 		Text highText = new Text(0,70,font.get(60, Color.WHITE),"HIGH SCORE",this.getVertexBufferObjectManager());
 		highText.setX(MenuActivity.SCREENWIDTH + (MenuActivity.SCREENWIDTH/2f - highText.getWidth()/2f));
-		scene.attachChild(highText);
+		mScene.attachChild(highText);
 
-		Sprite highScoreTable = new Sprite(MenuActivity.SCREENWIDTH,170,720,800,this.mHighScoreBGTextureRegion,this.getVertexBufferObjectManager());
-		scene.attachChild(highScoreTable);
+		Text highLocalText = new Text(0,150,font.get(48, Color.WHITE),"LOCAL",this.getVertexBufferObjectManager());
+		highLocalText.setX(MenuActivity.SCREENWIDTH + (MenuActivity.SCREENWIDTH/2f - highLocalText.getWidth()/2f));
+		mScene.attachChild(highLocalText);
+
+		Sprite highScoreTable = new Sprite(MenuActivity.SCREENWIDTH,250,720,800,this.mHighScoreBGTextureRegion,this.getVertexBufferObjectManager());
+		mScene.attachChild(highScoreTable);
 
 		
-		scene.setOnSceneTouchListener(new IOnSceneTouchListener() {
+		mScene.setOnSceneTouchListener(new IOnSceneTouchListener() {
 			@Override
 			public boolean onSceneTouchEvent(Scene pScene, TouchEvent pSceneTouchEvent) {
 				menuButton.setColor(1f,1f,1f);
@@ -336,7 +396,20 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 				} else if(pSceneTouchEvent.isActionMove()) {
 					camera.offsetCenter(xcoor - pSceneTouchEvent.getX(), 0);
 				} else if(pSceneTouchEvent.isActionUp()) {
-					if(camera.getCenterX() < MenuActivity.SCREENWIDTH) {
+					/*if(camera.getCenterX() < MenuActivity.SCREENWIDTH) {
+						camera.setCenter(MenuActivity.SCREENWIDTH/2f, MenuActivity.SCREENHEIGHT/2f);
+					} else if(camera.getCenterX() < -MenuActivity.SCREENWIDTH) {
+						camera.setCenter(MenuActivity.SCREENWIDTH/2f, MenuActivity.SCREENHEIGHT/2f);
+						camera.offsetCenter(MenuActivity.SCREENWIDTH, 0);
+					} else {
+						camera.setCenter(MenuActivity.SCREENWIDTH/2f, MenuActivity.SCREENHEIGHT/2f);
+						camera.offsetCenter(-MenuActivity.SCREENWIDTH, 0);
+					}*/
+					if(camera.getCenterX() < 0) {
+						camera.setCenter(MenuActivity.SCREENWIDTH/2f, MenuActivity.SCREENHEIGHT/2f);
+						camera.offsetCenter(-MenuActivity.SCREENWIDTH, 0);
+						
+					} else if(camera.getCenterX() < MenuActivity.SCREENWIDTH) {
 						camera.setCenter(MenuActivity.SCREENWIDTH/2f, MenuActivity.SCREENHEIGHT/2f);
 					} else {
 						camera.setCenter(MenuActivity.SCREENWIDTH/2f, MenuActivity.SCREENHEIGHT/2f);
@@ -355,15 +428,47 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 			for(int j=0;j<15-curScoreText.length()-curName.length();j++)
 				space = space + " ";
 			
-			Text curBann = new Text(MenuActivity.SCREENWIDTH+50,240+(i-1)*156,font.get(42, Color.WHITE),curName + space + curScoreText,this.getVertexBufferObjectManager());
+			Text curBann = new Text(MenuActivity.SCREENWIDTH+50,320+(i-1)*156,font.get(42, Color.WHITE),curName + space + curScoreText,this.getVertexBufferObjectManager());
 			if(i==modifying)
 				modifiableText = curBann;
 			
-			scene.attachChild(curBann);
+			mScene.attachChild(curBann);
 		}
 		
+		// Scene high score global
 		
-		return scene;
+		Text globalHighText = new Text(0,70,font.get(60, Color.WHITE),"HIGH SCORE",this.getVertexBufferObjectManager());
+		globalHighText.setX(-MenuActivity.SCREENWIDTH + (MenuActivity.SCREENWIDTH/2f - globalHighText.getWidth()/2f));
+		mScene.attachChild(globalHighText);
+
+		Text globalHighTextSub = new Text(0,150,font.get(48, Color.WHITE),"GLOBAL",this.getVertexBufferObjectManager());
+		globalHighTextSub.setX(-MenuActivity.SCREENWIDTH + (MenuActivity.SCREENWIDTH/2f - globalHighTextSub.getWidth()/2f));
+		mScene.attachChild(globalHighTextSub);
+		
+		Sprite globalHighScoreTable = new Sprite(-MenuActivity.SCREENWIDTH,250,720,800,this.mHighScoreBGTextureRegion,this.getVertexBufferObjectManager());
+		mScene.attachChild(globalHighScoreTable);
+		
+		return mScene;
+	}
+	
+	private void activateInput(boolean activate) {
+		if(activate) {
+			mScene.registerTouchArea(enterName);
+			enterName.setVisible(true);
+
+			leftBorderEN.setVisible(true);
+			rightBorderEN.setVisible(true);
+			highBorderEN.setVisible(true);
+			lowBorderEN.setVisible(true);
+		}else {
+			mScene.unregisterTouchArea(enterName);
+			enterName.setVisible(false);
+
+			leftBorderEN.setVisible(false);
+			rightBorderEN.setVisible(false);
+			highBorderEN.setVisible(false);
+			lowBorderEN.setVisible(false);
+		}
 	}
 	
 	public void onBackPressed() {
@@ -389,9 +494,42 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 				}
 				modifying = i;
 				isBetter=true;
-				scoreList.put(i, new Pair<Integer,String>(curScore,""));
+				scoreList.put(i, new Pair<Integer,String>(curScore,"Unknown"));
 			}
 		} 
+
+	    scoreUpload=false;
+	    asyncTaskHandler.post(new Runnable() {
+			@Override
+			public void run() {
+		    	new AsyncScoreSubmit().execute((Void)null);
+			}
+	    });
+	}
+	
+	public void drawElements() {
+		this.runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				for(int i=0;i<5;i++) {
+					int curScore = onlineScoreList.get(i).first;
+					String curName = onlineScoreList.get(i).second;
+					String curScoreText = String.valueOf(curScore);
+					String space = "";
+					for(int n=0;n<15-curScoreText.length()-curName.length();n++)
+						space = space + " ";
+					
+					Text curBann = new Text(-MenuActivity.SCREENWIDTH+50,320+i*156,font.get(42, Color.WHITE),curName + space + curScoreText,EndGameActivity.this.getVertexBufferObjectManager());
+					if(i==onlineModifying)
+						onlineModifiableText = curBann;
+					
+					mScene.attachChild(curBann);
+				}
+				
+				if(onlineBetter)
+					activateInput(true);
+			}
+		});
 	}
 	
 	protected void saveHighScores() {
@@ -407,6 +545,75 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 		} 
 	    
 	    editor.commit();
+	    
+	    if(onlineBetter) {
+		    scoreUpload=true;
+		    asyncTaskHandler.post(new Runnable() {
+				@Override
+				public void run() {
+			    	new AsyncScoreSubmit().execute((Void)null);
+				}
+		    });
+	    }
 	}
+	
+	private class AsyncScoreSubmit extends AsyncTask<Void, Void, Void> {
+		@Override
+		protected Void doInBackground(Void... params) {
+			if(scoreUpload) { // Upload the score
+				HttpPost postMethod = new HttpPost("http://lortexgames.alwaysdata.net/submit.php");
+				List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+				nameValuePairs.add(new BasicNameValuePair("name", onlineScoreList.get(onlineModifying).second));
+				nameValuePairs.add(new BasicNameValuePair("score", String.valueOf(onlineScoreList.get(onlineModifying).first)));
+				nameValuePairs.add(new BasicNameValuePair("level", String.valueOf(level)));
+				
+				try {
+					postMethod.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+					HttpResponse rep = client.execute(postMethod); 
+					Debug.i(rep.toString());
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				} catch (ClientProtocolException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			} else { //Download the scoreboard
+				HttpPost postMethod = new HttpPost("http://lortexgames.alwaysdata.net/get.php");
+				try {
+			        response = client.execute(postMethod, responseHandler);
+			        JSONArray jsonArray  = new JSONArray(response);
+			        for(int i=0; i<jsonArray.length(); i++){
+			            JSONObject j;
+							j = jsonArray.getJSONObject(i);
+						
+			            String name = j.get("name").toString();
+			            int score = Integer.parseInt(j.get("score").toString());
+			            onlineScoreList.append(i, new Pair<Integer,String>(score,name));
+			        }
+			        
+					for(int i=onlineScoreList.size()-1;i>=0;i--) {
+						if(onlineScoreList.get(i).first < score) {
+							if(i+1 <= 5) {
+								onlineScoreList.put(i+1,new Pair<Integer,String>(onlineScoreList.get(i).first,onlineScoreList.get(i).second));
+							}
+							onlineModifying = i;
+							onlineBetter=true;
+							onlineScoreList.put(i, new Pair<Integer,String>(score,"Unknown"));
+						}
+					} 
+		            EndGameActivity.this.drawElements();
+				} catch (JSONException e) {
+					e.printStackTrace();
+				} catch (ClientProtocolException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+			return null;
+		}
+	}
+
 
 }
