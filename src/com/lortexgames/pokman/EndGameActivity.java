@@ -3,6 +3,9 @@ package com.lortexgames.pokman;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +33,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
@@ -42,6 +46,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnShowListener;
+import android.content.SharedPreferences.Editor;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -53,7 +58,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Vibrator;
 import android.provider.Settings;
+import android.provider.Settings.Secure;
 import android.provider.Settings.System;
+import android.telephony.TelephonyManager;
 import android.text.InputFilter;
 import android.util.Pair;
 import android.util.SparseArray;
@@ -107,6 +114,10 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 	private Line highBorderEN;
 
 	private Line lowBorderEN;
+
+	private SharedPreferences settings;
+
+	private String mUuid;
 
 
 	@Override
@@ -162,6 +173,7 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 		font.load(60, Color.WHITE);
 		font.load(50, Color.WHITE);
 		font.load(42, Color.WHITE);
+		font.load(42, Color.YELLOW);
 		font.load(48, Color.WHITE);
 		font.load(30, Color.WHITE);
 		font.load(50, Color.YELLOW);
@@ -179,6 +191,18 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 	protected Scene onCreateScene() {
 		mScene = new Scene();
 		mScene.setBackground(new Background(0f,0f,0f));
+		
+		settings = this.getSharedPreferences(MenuActivity.PREFS_NAME, 0);
+        mUuid = settings.getString("uuid", "");
+        
+        if(mUuid=="") {
+    	    asyncTaskHandler.post(new Runnable() {
+    			@Override
+    			public void run() {
+    		    	new AsyncGetUUID().execute((Void)null);
+    			}
+    	    });
+        }
 		
 		final boolean hapticFeedback = System.getInt(this.getContentResolver(), Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) != 0;
 		
@@ -428,7 +452,8 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 			for(int j=0;j<15-curScoreText.length()-curName.length();j++)
 				space = space + " ";
 			
-			Text curBann = new Text(MenuActivity.SCREENWIDTH+50,320+(i-1)*156,font.get(42, Color.WHITE),curName + space + curScoreText,this.getVertexBufferObjectManager());
+			int color = (i==modifying) ? Color.YELLOW : Color.WHITE;
+			Text curBann = new Text(MenuActivity.SCREENWIDTH+50,320+(i-1)*156,font.get(42,color),curName + space + curScoreText,this.getVertexBufferObjectManager());
 			if(i==modifying)
 				modifiableText = curBann;
 			
@@ -518,8 +543,9 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 					String space = "";
 					for(int n=0;n<15-curScoreText.length()-curName.length();n++)
 						space = space + " ";
-					
-					Text curBann = new Text(-MenuActivity.SCREENWIDTH+50,320+i*156,font.get(42, Color.WHITE),curName + space + curScoreText,EndGameActivity.this.getVertexBufferObjectManager());
+
+					int color = (i==onlineModifying) ? Color.YELLOW : Color.WHITE;
+					Text curBann = new Text(-MenuActivity.SCREENWIDTH+50,320+i*156,font.get(42, color),curName + space + curScoreText,EndGameActivity.this.getVertexBufferObjectManager());
 					if(i==onlineModifying)
 						onlineModifiableText = curBann;
 					
@@ -561,27 +587,60 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 		@Override
 		protected Void doInBackground(Void... params) {
 			if(scoreUpload) { // Upload the score
-				HttpPost postMethod = new HttpPost("http://lortexgames.alwaysdata.net/submit.php");
-				List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-				nameValuePairs.add(new BasicNameValuePair("name", onlineScoreList.get(onlineModifying).second));
-				nameValuePairs.add(new BasicNameValuePair("score", String.valueOf(onlineScoreList.get(onlineModifying).first)));
-				nameValuePairs.add(new BasicNameValuePair("level", String.valueOf(level)));
-				
-				try {
+				if(mUuid!="") {
+					try {
+					HttpPost postMethod = new HttpPost("http://lortexgames.alwaysdata.net/submit.php");
+					List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+					nameValuePairs.add(new BasicNameValuePair("name", onlineScoreList.get(onlineModifying).second));
+					nameValuePairs.add(new BasicNameValuePair("score", String.valueOf(onlineScoreList.get(onlineModifying).first)));
+					nameValuePairs.add(new BasicNameValuePair("level", String.valueOf(level)));
+					nameValuePairs.add(new BasicNameValuePair("uuid", mUuid));
+					String keywords = "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz";
+					
+					MessageDigest md;
+					md = MessageDigest.getInstance("SHA-256");
+			        md.update((String.valueOf(onlineScoreList.get(onlineModifying).first) + "hello" + String.valueOf(level) + "what are your doing ?" + mUuid + keywords.charAt(19) + keywords.charAt(17) + keywords.charAt(14) + keywords.charAt(11) + keywords.charAt(11) + keywords.charAt(5) + keywords.charAt(0) + keywords.charAt(2) + keywords.charAt(4)).getBytes());
+					
+			        
+			        byte byteData[] = md.digest();
+			 
+			        //convert the byte to hex format method 1
+			        StringBuffer sb = new StringBuffer();
+			        for (int i = 0; i < byteData.length; i++) {
+			         sb.append(Integer.toString((byteData[i] & 0xff) + 0x100, 16).substring(1));
+			        }
+			        
+					String hash = sb.toString();
+					/*Debug.i("Data:"+String.valueOf(onlineScoreList.get(onlineModifying).first) + "hello" + String.valueOf(level) + "what are your doing ?" + mUuid + keywords.charAt(19) + keywords.charAt(17) + keywords.charAt(14) + keywords.charAt(11) + keywords.charAt(11) + keywords.charAt(5) + keywords.charAt(0) + keywords.charAt(2) + keywords.charAt(4));
+			        Debug.i("Hash:"+hash);*/
+			    
+					
+					nameValuePairs.add(new BasicNameValuePair("hash", hash));
+					
 					postMethod.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-					HttpResponse rep = client.execute(postMethod); 
-					Debug.i(rep.toString());
-				} catch (UnsupportedEncodingException e) {
-					e.printStackTrace();
-				} catch (ClientProtocolException e) {
-					e.printStackTrace();
-				} catch (IOException e) {
-					e.printStackTrace();
+					String rep = client.execute(postMethod,responseHandler); 
+					Debug.i(rep);
+					
+					if(postMethod.getEntity() != null ) {
+						postMethod.getEntity().consumeContent();
+				     }
+					
+					} catch (UnsupportedEncodingException e) {
+						e.printStackTrace();
+					} catch (ClientProtocolException e) {
+						e.printStackTrace();
+					} catch (IOException e) {
+						e.printStackTrace();
+					} catch (NoSuchAlgorithmException e1) {
+						e1.printStackTrace();
+				}
 				}
 			} else { //Download the scoreboard
 				HttpPost postMethod = new HttpPost("http://lortexgames.alwaysdata.net/get.php");
+
 				try {
-			        response = client.execute(postMethod, responseHandler);
+					response = client.execute(postMethod, responseHandler);
+					//Debug.i(response);
 			        JSONArray jsonArray  = new JSONArray(response);
 			        for(int i=0; i<jsonArray.length(); i++){
 			            JSONObject j;
@@ -602,6 +661,11 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 							onlineScoreList.put(i, new Pair<Integer,String>(score,"Unknown"));
 						}
 					} 
+					
+					if(postMethod.getEntity() != null ) {
+						postMethod.getEntity().consumeContent();
+				     }
+					
 		            EndGameActivity.this.drawElements();
 				} catch (JSONException e) {
 					e.printStackTrace();
@@ -613,6 +677,41 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 			}
 			return null;
 		}
+	}
+	
+	private class AsyncGetUUID extends AsyncTask<Void, Void, Void> { // Generate UUID for app
+		@Override
+		protected Void doInBackground(Void... params) {
+			HttpPost postMethod = new HttpPost("http://lortexgames.alwaysdata.net/uuid.php");
+			List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+			
+			final String androidId = Secure.getString(EndGameActivity.this.getContentResolver(), Secure.ANDROID_ID);
+			TelephonyManager mTelephonyMgr = (TelephonyManager)EndGameActivity.this.getSystemService(TELEPHONY_SERVICE);
+			String simSerial = mTelephonyMgr.getSimSerialNumber();
+			nameValuePairs.add(new BasicNameValuePair("android_id", androidId));
+			nameValuePairs.add(new BasicNameValuePair("sim_id", simSerial));
+			
+			try {
+				postMethod.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+				String rep = client.execute(postMethod,responseHandler); 
+				String newUuid = rep;
+				Editor edit = settings.edit();
+				edit.putString("uuid", newUuid);
+				edit.commit();
+				mUuid = newUuid;
+				
+				if(postMethod.getEntity() != null ) {
+					postMethod.getEntity().consumeContent();
+			     }
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			} catch (ClientProtocolException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return null;
+		} 
 	}
 
 

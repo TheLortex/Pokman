@@ -71,17 +71,28 @@ import android.view.WindowManager;
 
 public class GameActivity extends SimpleBaseGameActivity  implements SensorEventListener {
 
+	private static int[] as;
+	
 	private Camera mCamera;
 	private static final int HUD_HEIGHT=150;
 	
 	public static final String WIN = "com.lortexgames.pokman.WIN";
 	public static final String SCORE = "com.lortexgames.pokman.SCORE";
 	public static final String NVIES = "com.lortexgames.pokman.NVIES";
+	
+
+	public static final int axisSwap[][] = { 
+    {  1,  1,  0,  1  },     // ROTATION_0 
+    {-1,  1,  1,  0  },     // ROTATION_90 
+    {-1,    -1,  0,  1  },     // ROTATION_180 
+    {  1,    -1,  1,  0  }  }; // ROTATION_270 
 
 	final short CATEGORY_PACMAN = 0x0001;
 	final short CATEGORY_GHOST =0x0002;
 	final short CATEGORY_SCENERY = 0x0004;
     final short CATEGORY_GHOSTEYES = 0x0008;
+    
+    final boolean SHOW_FPS = true;
 	
 	private int TILE_SIZE = 40;
 	private int nRow, nCol;
@@ -160,7 +171,7 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 	private Text menuText;
 	private FontManager font;
 	private FPSLogger fpsLogger;
-//	private Text fpsText;
+	private Text fpsText;
 	protected float mGhostGravityScale;
 	private float mPacmanGravityScale;
 	private float mGhostAttractDivFactor;
@@ -168,6 +179,14 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 	private TextureRegion mStartTextBackgroundTextureRegion;
 	private boolean mFirstTime;
 	private TextureRegion mStartArrowTextureRegion;
+
+	private float[] rawValues = {0,0};
+	private float[] realValues= {0,0};
+
+	private Vector2 gravity;
+
+	private Vector2 force;
+
 	
 	@Override
 	public EngineOptions onCreateEngineOptions() {
@@ -178,7 +197,9 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		mLevel = intent.getIntExtra(MenuActivity.LEVEL,1);
 		mScore = intent.getIntExtra(SCORE,0);
 		nVies = intent.getIntExtra(NVIES,3);
-		
+
+		gravity = new Vector2();
+		force = new Vector2();
 		
 		SharedPreferences settings = getSharedPreferences(MenuActivity.PREFS_NAME, 0);
 		//spercentageMusic = settings.getInt("music", 100)/100f;
@@ -362,6 +383,7 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		
 		MediaPlayer audio = MediaPlayer.create(getApplicationContext(), R.raw.start);
 		int duration = audio.getDuration() + 100;
+		audio.reset();
 		audio.release();
 
 		SharedPreferences settings = this.getSharedPreferences(MenuActivity.PREFS_NAME, 0);
@@ -592,9 +614,11 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
     		editor2.commit();
     	}
 		
-		/*fpsText = new Text(0,10,font.get(30, Color.WHITE),String.format("%03d", 0),getVertexBufferObjectManager());
-		fpsText.setX(MenuActivity.SCREENWIDTH - fpsText.getWidth() - 15);
-		mScene.attachChild(fpsText);*/
+    	if(SHOW_FPS) {
+			fpsText = new Text(0,10,font.get(30, Color.WHITE),String.format("%03d", 0),getVertexBufferObjectManager());
+			fpsText.setX(MenuActivity.SCREENWIDTH - fpsText.getWidth() - 15);
+			mScene.attachChild(fpsText);
+    	}
 		
 		mScene.registerUpdateHandler(this.mPhysicsWorld);
 		this.getEngine().registerUpdateHandler(new IUpdateHandler() {
@@ -603,10 +627,12 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 
             @Override
             public void onUpdate(final float pSecondsElapsed) {
-            	/*if(fpsText != null) {
-        			fpsText.setText(String.format("%03d", (int)fpsLogger.getFPS()));
-        			fpsLogger.reset();
-        		}*/
+            	if(SHOW_FPS) {
+	            	if(fpsText != null) {
+	        			fpsText.setText(String.format("%03d", (int)fpsLogger.getFPS()));
+	        			//fpsLogger.reset();
+	        		}
+            	}
             	
             	tickLoop();
             }
@@ -651,10 +677,14 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 			Display display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 			int orientation = display.getRotation();
 			
-			Vector2 gravity = new Vector2();
+
+
+			rawValues[0] = event.values[0];
+			rawValues[1] = event.values[1];
 			
-			final float rawValues[] = {event.values[0],event.values[1]};
-			final float realValues[] = {0,0};
+			realValues[0] = 0f;
+			realValues[1] = 0f;
+			
 			canonicalToScreenOrientation(orientation,rawValues,realValues);
 
 			float x = realValues[0];
@@ -671,6 +701,7 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 			
 			gravity.mul(5);
 			gravity.mul(mPacmanGravityScale);
+			
 			
 			if(update)
 				this.mPhysicsWorld.setGravity(gravity);
@@ -851,7 +882,6 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		while(it.hasNext()) // tant qu'on a un suivant
 		{
 			Body ghost = it.next();
-			Vector2 force = new Vector2();
 			float forceX = pacman.getPosition().x - ghost.getPosition().x;
 			float forceY = pacman.getPosition().y - ghost.getPosition().y;
 			if((ghosts.get(ghost).getTextureRegion() == mVulGhost1TextureRegion)||(ghosts.get(ghost).getTextureRegion()==mVulGhost2TextureRegion)||(ghosts.get(ghost).getTextureRegion()==mGhostEyesTextureRegion)) {
@@ -874,6 +904,7 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		// -----------------------------
 		for(int i=0;i<bonus_points.size();i++) {
 			if(bonus_points.get(i).collidesWith(pacmanShape)) {
+				
     			mScore += 42;
     			
 				bonus_points.get(i).detachSelf();
@@ -891,14 +922,14 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 							nbKill=0;
 						}
 					}
-				}, 10000);
+				}, 20000);
 				
 				new Timer().schedule(new TimerTask(){
 					@Override
 					public void run() {
 						blinkLoop(true);
 					}
-				}, 4000);
+				}, 15000);
 			}
 		}
 		
@@ -1035,34 +1066,32 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 	
 
 	protected void blinkLoop(final boolean loop) {
-		if((mBonusActivated == 0)||(mBonusActivated > 1))
+		if(mBonusActivated == 0)
 			return;
 		
-	/*	this.runOnUpdateThread(new Runnable() {
-			@Override
-			public void run() {*/
-				ITextureRegion selTexture = null;
-				
-				Iterator<Body> it=ghosts.keySet().iterator();
+		ITextureRegion selTexture = null;
+		
+		Iterator<Body> it=ghosts.keySet().iterator();
 
-				while(it.hasNext()){
-					Body ghost = it.next();
-					Sprite ghostSprite = ghosts.get(ghost);
-					if(!loop) {
-						selTexture = mVulGhost1TextureRegion;
-					} else {
-						if(ghostSprite.getTextureRegion() == mVulGhost1TextureRegion)
-							selTexture =  mVulGhost2TextureRegion;
-						else if(ghostSprite.getTextureRegion() == mVulGhost2TextureRegion)
-							selTexture = mVulGhost1TextureRegion;
-						else 
-							selTexture = ghostSprite.getTextureRegion();
-					}
-					if(ghostSprite.getTextureRegion() != mGhostEyesTextureRegion)
-						ghostSprite.setTextureRegion(selTexture);
-				}
-			/*}
-		});*/
+		while(it.hasNext()){
+			Body ghost = it.next();
+			Sprite ghostSprite = ghosts.get(ghost);
+			if(!loop) {
+				selTexture = mVulGhost1TextureRegion;
+			} else {
+				if(ghostSprite.getTextureRegion() == mVulGhost1TextureRegion)
+					selTexture =  mVulGhost2TextureRegion;
+				else if(ghostSprite.getTextureRegion() == mVulGhost2TextureRegion)
+					selTexture = mVulGhost1TextureRegion;
+				else 
+					selTexture = ghostSprite.getTextureRegion();
+			}
+			if((ghostSprite.getTextureRegion() != mGhostEyesTextureRegion)&&(ghostSprite.getTextureRegion() != mGhostEyesInvTextureRegion))
+				ghostSprite.setTextureRegion(selTexture);
+		}
+		
+		if(mBonusActivated > 1)
+			return;
 		
 		if(loop) {
 			new Timer().schedule(new TimerTask(){
@@ -1192,13 +1221,7 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 	
 	static void canonicalToScreenOrientation(int displayRotation, float[] canVec, float[] screenVec) 
 	{ 
-	    final int axisSwap[][] = { 
-	    {  1,  1,  0,  1  },     // ROTATION_0 
-	    {-1,  1,  1,  0  },     // ROTATION_90 
-	    {-1,    -1,  0,  1  },     // ROTATION_180 
-	    {  1,    -1,  1,  0  }  }; // ROTATION_270 
-
-	    final int[] as = axisSwap[displayRotation]; 
+	    as = axisSwap[displayRotation]; 
 	    screenVec[0]  =  (float)as[0] * canVec[ as[2] ]; 
 	    screenVec[1]  =  (float)as[1] * canVec[ as[3] ]; 
 	} 
