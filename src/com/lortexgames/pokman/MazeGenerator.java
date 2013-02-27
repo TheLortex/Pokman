@@ -1,4 +1,4 @@
-package com.lortexgames.pokman;
+package  com.lortexgames.pokman;
 
 import java.util.Vector;
 

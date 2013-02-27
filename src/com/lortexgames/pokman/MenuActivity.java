@@ -300,7 +300,7 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 		    }
 		}; 
 		
-		Text pacVer = new Text(0, (float) (SCREENHEIGHT * 0.925), this.mSmallFont, "Bêta 0.6.0", this.getVertexBufferObjectManager());
+		Text pacVer = new Text(0, (float) (SCREENHEIGHT * 0.925), this.mSmallFont, "Bêta 0.6.1", this.getVertexBufferObjectManager());
 		pacVer.setX(SCREENWIDTH - pacVer.getWidth() - 10);
 		
 		feedbackText = new Text((float) (SCREENWIDTH*0.05), (float) (SCREENHEIGHT * 0.925), this.mSmallFont, "Feedback", this.getVertexBufferObjectManager()) {

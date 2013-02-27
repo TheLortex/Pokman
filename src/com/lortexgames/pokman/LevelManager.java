@@ -27,7 +27,7 @@ public class LevelManager {
 		level2.pointValue=11;
 		
 		LevelSet level3 = new LevelSet();
-		level3.maxWallLenght=9;
+		level3.maxWallLenght=7;
 		level3.ghostAttractDivFactor=100f;
 		level3.ghostGravityScale=0.8f;
 		level3.pacmanGravityScale=1.5f;

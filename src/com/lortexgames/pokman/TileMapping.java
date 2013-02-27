@@ -9,6 +9,7 @@ import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.texture.region.TextureRegion;
+import org.andengine.opengl.util.GLState;
 
 public class TileMapping {
 	
@@ -31,8 +32,10 @@ public class TileMapping {
 	}
 	
 	public void loadTextures() throws IOException {
-		this.mBitmapTextureAtlas = new BitmapTextureAtlas(mParent.getTextureManager(), 256, 256, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
+		this.mBitmapTextureAtlas = new BitmapTextureAtlas(mParent.getTextureManager(), 256, 256, TextureOptions.NEAREST_PREMULTIPLYALPHA);
+		//mBitmapTextureAtlas.
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
+		
 		
 		this.mWallRDPT = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, mParent.getApplicationContext(), "wall-rdpt.png", 0, 0); 
 		this.mWallHB = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, mParent.getApplicationContext(), "wall-hb.png", 0, 40); 
@@ -50,7 +53,6 @@ public class TileMapping {
 		this.mWallB = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, mParent.getApplicationContext(), "wall-b.png", 0, 120); 
 		this.mWallD = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, mParent.getApplicationContext(), "wall-d.png", 40, 120); 
 		this.mWallG = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, mParent.getApplicationContext(), "wall-g.png", 80, 120); 
-		
 		
 		mParent.getEngine().getTextureManager().loadTexture(mBitmapTextureAtlas);
 	}

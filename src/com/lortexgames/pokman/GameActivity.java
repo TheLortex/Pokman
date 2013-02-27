@@ -27,6 +27,7 @@ import org.andengine.entity.text.Text;
 import org.andengine.entity.util.FPSLogger;
 import org.andengine.input.touch.TouchEvent;
 import org.andengine.opengl.texture.ITexture;
+import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.bitmap.BitmapTexture;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.texture.region.TextureRegion;
@@ -44,7 +45,6 @@ import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.Manifold;
-import com.lortexgames.pokman.R;
 import com.purplebrain.giftiz.sdk.GiftizSDK;
 
 import android.app.Service;
@@ -240,6 +240,9 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		nRow = nRow%2==0 ? nRow - 1 : nRow;
 		nCol = (int) Math.floor(gameL  / ((double) getTileSize()));
 		nCol = nCol%2==0 ? nCol - 1 : nCol;
+
+		nRow = 15;
+		nCol = 15;
 		
 		marginLeft = (gameL - nCol * (getTileSize())) / 2;
 		marginTop = HUD_HEIGHT;
@@ -296,21 +299,24 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		
 			
 		try {
-			ITexture pacmanMangeTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/newgfx/pacman_mange.png");}});
-			ITexture redGhostTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/newgfx/monster_red_mange.png");}});
-			ITexture blueGhostTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/newgfx/monster_blue_mange.png");}});
-			ITexture pinkGhostTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/newgfx/monster_pink_mange.png");}});
-			ITexture orangeGhostTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/newgfx/monster_orange_mange.png");}});
-			ITexture bonusPointTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/bonus_point.png");}});
-			ITexture vulGhost1Texture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/newgfx/monster_vulnerable.png");}});
-			ITexture vulGhost2Texture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/newgfx/monster_vulnerable2.png");}});
-			ITexture ghostEyesTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/newgfx/monster_death.png");}});
-			ITexture ghostEyesInvTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/newgfx/monster_death2.png");}});
-			ITexture pointTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/point.png");}});
-			ITexture pacmanTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/newgfx/pacman.png");}});
-			ITexture popupBackgroundTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/bg_popup.png");}});
+			TextureOptions opt = TextureOptions.BILINEAR_PREMULTIPLYALPHA;
+			
+			ITexture pacmanMangeTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/newgfx/pacman_mange.png");}},opt);
+			ITexture redGhostTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/newgfx/monster_red_mange.png");}},opt);
+			ITexture blueGhostTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/newgfx/monster_blue_mange.png");}},opt);
+			ITexture pinkGhostTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/newgfx/monster_pink_mange.png");}},opt);
+			ITexture orangeGhostTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/newgfx/monster_orange_mange.png");}},opt);
+			ITexture bonusPointTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/bonus_point.png");}},opt);
+			ITexture vulGhost1Texture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/newgfx/monster_vulnerable.png");}},opt);
+			ITexture vulGhost2Texture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/newgfx/monster_vulnerable2.png");}},opt);
+			ITexture ghostEyesTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/newgfx/monster_death.png");}},opt);
+			ITexture ghostEyesInvTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/newgfx/monster_death2.png");}},opt);
+			ITexture pointTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/point.png");}},opt);
+			ITexture pacmanTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/newgfx/pacman.png");}},opt);
+			ITexture popupBackgroundTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/bg_popup.png");}},opt);
 			ITexture startTextBackgroundTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/bg_start_text.png");}});
 			ITexture startArrowTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/arrow.png");}});
+
 			
 			pacmanMangeTexture.load();
 			redGhostTexture.load();
@@ -508,6 +514,8 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 						    		target.setGravityScale(0.5f);
 						    		nbKill++;
 						    		mScore += 200*nbKill;
+						    		
+						    		manageHUDUI(mScene);
 						    		
 						    		new Timer().schedule(new TimerTask() {
 										@Override
@@ -795,7 +803,7 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 				pacLives.add(liveIcon);
 			}
 		} else if(pacLives.size() > nVies) {
-			while (pacLives.size() > nVies) {
+			while ((pacLives.size() > nVies)&&(nVies>=0)) {
 				Sprite spr = pacLives.lastElement();
 				spr.detachSelf();
 				pacLives.remove(pacLives.size()-1);
@@ -933,8 +941,14 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 			}
 		}
 		
-		final int pacManX = (int) ((pacmanShape.getX() - marginLeft + pacmanShape.getWidth()/2f)/TILE_SIZE);
-    	final int pacManY = (int) ((pacmanShape.getY() - marginTop + pacmanShape.getHeight()/2f)/TILE_SIZE);
+		int pacManX = (int) ((pacmanShape.getX() - marginLeft + pacmanShape.getWidth()/2f)/TILE_SIZE);
+    	int pacManY = (int) ((pacmanShape.getY() - marginTop + pacmanShape.getHeight()/2f)/TILE_SIZE);
+    	
+    	if((pacManX < 0)||(pacManX > this.nCol))
+    		pacManX = 0;
+    	
+    	if((pacManY < 0)||(pacManY > this.nRow))
+    		pacManY = 0;
     	
     	if(points.get(pacManX).get(pacManY) != null) {
     		if(points.get(pacManX).get(pacManY).collidesWith(pacmanShape)) {
