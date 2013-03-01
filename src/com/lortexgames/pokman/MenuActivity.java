@@ -65,6 +65,7 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 	private Sprite giftizButton;
 	protected boolean buttonClicked;
 	private TextureRegion mGiftizNullTextureRegion;
+	private Text howto;
 	
     public static final String PREFS_NAME = "PacmanPrefs";
     public final static String LEVEL = "com.lortexgames.pokman.LEVEL";
@@ -126,7 +127,31 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 		final SharedPreferences settings = getSharedPreferences(MenuActivity.PREFS_NAME, 0);
         final int maxLevel = settings.getInt("maxLevel", 1);
         
-		play = new Text((float) (SCREENWIDTH*0.3), (float) (SCREENHEIGHT * 0.4), this.mFont, "PLAY", this.getVertexBufferObjectManager()) {
+        howto = new Text((float) (SCREENWIDTH*0.3), (float) (SCREENHEIGHT * 0.33), this.mFont, "TUTORIAL", this.getVertexBufferObjectManager()){
+			@Override
+		    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
+				if ((pSceneTouchEvent.isActionDown())||(pSceneTouchEvent.isActionMove()))
+		        	this.setColor(1f,1f,0f);
+		        else if(pSceneTouchEvent.isActionUp()) {
+		        	if(hapticFeedback) {
+			        	Vibrator v = (Vibrator) MenuActivity.this.getApplicationContext().getSystemService(Service.VIBRATOR_SERVICE);
+			        	v.vibrate(100);
+		        	}
+		        	
+		        	Intent intent = new Intent(MenuActivity.this, TutorialActivity.class);
+					startActivityForResult(intent, 1);
+		        	this.setColor(1f,1f,1f);
+		        }
+		        return true;
+		    }
+		};
+		
+		howto.setX((float) (0.5*SCREENWIDTH - howto.getWidth()/2.0));
+		scene.attachChild(howto);
+		scene.registerTouchArea(howto);
+        
+        
+		play = new Text((float) (SCREENWIDTH*0.3), (float) (SCREENHEIGHT * 0.44), this.mFont, "PLAY", this.getVertexBufferObjectManager()) {
 		    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
 				if ((pSceneTouchEvent.isActionDown())||(pSceneTouchEvent.isActionMove()))
 		        	this.setColor(1f,1f,0f);
@@ -220,25 +245,6 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 		    }
 		};
 		
-		
-		
-		/* {
-			@Override
-		    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
-				if ((pSceneTouchEvent.isActionDown())||(pSceneTouchEvent.isActionMove()))
-		        	this.setColor(1f,1f,0f);
-		        else if(pSceneTouchEvent.isActionUp()) {
-		        	Vibrator v = (Vibrator) MenuActivity.this.getApplicationContext().getSystemService(Service.VIBRATOR_SERVICE);
-		        	v.vibrate(100);
-		        	
-		        	Intent intent = new Intent(MenuActivity.this, GameActivity.class);
-		        	intent.putExtra(LEVEL, 1);
-					startActivityForResult(intent, 1);
-		        	this.setColor(1f,1f,1f);
-		        }
-		        return true;
-		    }
-		};*/
 		
 		
 		play.setX((float) (0.5*SCREENWIDTH - play.getWidth()/2.0));
@@ -338,8 +344,8 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 		    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
 				if ((pSceneTouchEvent.isActionDown())||(pSceneTouchEvent.isActionMove())) {
 					if(buttonClicked != true) {
-						giftizButton.setY(giftizButton.getY()-5);
-						giftizButton.setX(giftizButton.getX()-5);
+						giftizButton.setY(giftizButton.getY()-3);
+						giftizButton.setX(giftizButton.getX()-3);
 						buttonClicked = true;
 					}
 				}
@@ -350,8 +356,8 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 		        	}
 		        	GiftizSDK.Inner.buttonClicked(MenuActivity.this);
 		        	this.setColor(1f,1f,1f);
-					giftizButton.setY(giftizButton.getY()+5);
-					giftizButton.setX(giftizButton.getX()+5);
+					giftizButton.setY(giftizButton.getY()+3);
+					giftizButton.setX(giftizButton.getX()+3);
 					buttonClicked = false;
 		        }
 		        return true;
@@ -387,10 +393,11 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 				play.setColor(1f,1f,1f);
 				credit.setColor(1f,1f,1f);
 				feedbackText.setColor(1f,1f,1f);
+				howto.setColor(1f,1f,1f);
 
 				if(buttonClicked != false) {
-					giftizButton.setY(giftizButton.getY()+5);
-					giftizButton.setX(giftizButton.getX()+5);
+					giftizButton.setY(giftizButton.getY()+3);
+					giftizButton.setX(giftizButton.getX()+3);
 					buttonClicked = false;
 				}
 				return false;

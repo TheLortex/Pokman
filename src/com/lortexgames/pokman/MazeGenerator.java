@@ -88,6 +88,14 @@ public class MazeGenerator {
 		}
 	}
 	
+	public void customMap(Element[][] map) {
+		for(int i=0;i<mWidth;i++) {
+			for(int j=0;j<mHeight;j++) {
+				value(i,j,map[i][j]);
+			}
+		}
+	}
+	
 	public int getCountWalls() {
 		return nWalls;
 	}

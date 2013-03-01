@@ -13,6 +13,7 @@ import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 import org.andengine.entity.primitive.Line;
+import org.andengine.entity.primitive.Paginator;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.scene.background.Background;
@@ -51,6 +52,7 @@ import android.media.AudioManager;
 import android.media.SoundPool;
 import android.media.SoundPool.OnLoadCompleteListener;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Vibrator;
@@ -105,16 +107,16 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 	private Handler asyncTaskHandler ;
 
 	private Line leftBorderEN;
-
 	private Line rightBorderEN;
-
 	private Line highBorderEN;
-
 	private Line lowBorderEN;
 
 	private SharedPreferences settings;
-
+	
 	private String mUuid;
+	private String lastName;
+	
+	private Paginator pagination;
 
 
 	@Override
@@ -175,13 +177,29 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 		font.load(30, Color.WHITE);
 		font.load(50, Color.YELLOW);
 		
-		asyncTaskHandler = new Handler(Looper.getMainLooper());
 	}
-
+	
+	
+	protected void onCreate(Bundle b) {
+		super.onCreate(b);
+		settings = this.getSharedPreferences(MenuActivity.PREFS_NAME, 0);
+		lastName = settings.getString("lastName", "");
+		asyncTaskHandler = new Handler(Looper.getMainLooper());
+		scoreList = new SparseArray<Pair<Integer,String>>();
+		onlineScoreList = new SparseArray<Pair<Integer,String>>();
+		getHighScores(score);
+	}
+	
 	@Override
 	protected void onStop() {
-		saveHighScores();
 		super.onStop();
+		saveHighScores();
+		if(modifying!=-1) {
+			Editor edit = settings.edit();
+			String name = scoreList.get(modifying).second;
+			edit.putString("lastName", name);
+			edit.commit();
+		}
 	}
 	
 	@Override
@@ -189,7 +207,6 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 		mScene = new Scene();
 		mScene.setBackground(new Background(0f,0f,0f));
 		
-		settings = this.getSharedPreferences(MenuActivity.PREFS_NAME, 0);
         mUuid = settings.getString("uuid", "");
         
         if(mUuid=="") {
@@ -223,12 +240,9 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 		Text scoreText = new Text(0,370,font.get(50, Color.YELLOW),""+score,this.getVertexBufferObjectManager());
 		scoreText.setX(MenuActivity.SCREENWIDTH/2f - scoreText.getWidth()/2f);
 		mScene.attachChild(scoreText);
-
-		scoreList = new SparseArray<Pair<Integer,String>>();
-		onlineScoreList = new SparseArray<Pair<Integer,String>>();
-		getHighScores(score);
 		
-		enterName = new Text(0,scoreText.getY() + 220,font.get(42, Color.WHITE),"Enter name",this.getVertexBufferObjectManager()) {
+		
+		enterName = new Text(0,scoreText.getY() + 220,font.get(42, Color.WHITE),"XXXXXXXXXX",this.getVertexBufferObjectManager()) {
 		    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
 				if ((pSceneTouchEvent.isActionDown())||(pSceneTouchEvent.isActionMove()))
 		        	this.setColor(1f,1f,0f);
@@ -331,7 +345,8 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 		
 		if(!isBetter)
 			activateInput(false);
-		
+
+		enterName.setText(lastName==""?"Enter name":lastName);
 		
 		// Buttons
 		
@@ -385,11 +400,6 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 		mScene.registerTouchArea(menuButton);
 		mScene.registerTouchArea(returnButton);
 		
-		Text infoText = new Text(0,0,font.get(30, Color.WHITE),"Swipe to see high scores",this.getVertexBufferObjectManager());
-		infoText.setX(MenuActivity.SCREENWIDTH/2f - infoText.getWidth()/2f);
-		infoText.setY(MenuActivity.SCREENHEIGHT - infoText.getHeight() - 30);
-		mScene.attachChild(infoText);
-		
 		// Scene HIGH SCORE local
 		
 		Text highText = new Text(0,70,font.get(60, Color.WHITE),"HIGH SCORE",this.getVertexBufferObjectManager());
@@ -416,26 +426,25 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 					xcoor = pSceneTouchEvent.getX();
 				} else if(pSceneTouchEvent.isActionMove()) {
 					camera.offsetCenter(xcoor - pSceneTouchEvent.getX(), 0);
+					pagination.setX(pagination.getX()+xcoor - pSceneTouchEvent.getX());
 				} else if(pSceneTouchEvent.isActionUp()) {
-					/*if(camera.getCenterX() < MenuActivity.SCREENWIDTH) {
-						camera.setCenter(MenuActivity.SCREENWIDTH/2f, MenuActivity.SCREENHEIGHT/2f);
-					} else if(camera.getCenterX() < -MenuActivity.SCREENWIDTH) {
-						camera.setCenter(MenuActivity.SCREENWIDTH/2f, MenuActivity.SCREENHEIGHT/2f);
-						camera.offsetCenter(MenuActivity.SCREENWIDTH, 0);
-					} else {
-						camera.setCenter(MenuActivity.SCREENWIDTH/2f, MenuActivity.SCREENHEIGHT/2f);
-						camera.offsetCenter(-MenuActivity.SCREENWIDTH, 0);
-					}*/
+					int page;
 					if(camera.getCenterX() < 0) {
 						camera.setCenter(MenuActivity.SCREENWIDTH/2f, MenuActivity.SCREENHEIGHT/2f);
 						camera.offsetCenter(-MenuActivity.SCREENWIDTH, 0);
-						
+						pagination.setX(-MenuActivity.SCREENWIDTH);
+						page=1;
 					} else if(camera.getCenterX() < MenuActivity.SCREENWIDTH) {
 						camera.setCenter(MenuActivity.SCREENWIDTH/2f, MenuActivity.SCREENHEIGHT/2f);
+						pagination.setX(0);
+						page=2;
 					} else {
 						camera.setCenter(MenuActivity.SCREENWIDTH/2f, MenuActivity.SCREENHEIGHT/2f);
 						camera.offsetCenter(MenuActivity.SCREENWIDTH, 0);
+						pagination.setX(MenuActivity.SCREENWIDTH);
+						page=3;
 					}
+					pagination.setPage(page);
 				}
 				return false;
 			}
@@ -470,6 +479,8 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 		Sprite globalHighScoreTable = new Sprite(-MenuActivity.SCREENWIDTH,250,720,800,this.mHighScoreBGTextureRegion,this.getVertexBufferObjectManager());
 		mScene.attachChild(globalHighScoreTable);
 		
+		pagination = new Paginator(20, MenuActivity.SCREENHEIGHT-20, MenuActivity.SCREENWIDTH-40, 15, 3, 2, this.getVertexBufferObjectManager());
+		mScene.attachChild(pagination);
 		return mScene;
 	}
 	
@@ -516,7 +527,7 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 				}
 				modifying = i;
 				isBetter=true;
-				scoreList.put(i, new Pair<Integer,String>(curScore,"Unknown"));
+				scoreList.put(i, new Pair<Integer,String>(curScore,lastName==""?"Unknown":lastName));
 			}
 		} 
 

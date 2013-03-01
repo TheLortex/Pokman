@@ -240,9 +240,6 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		nRow = nRow%2==0 ? nRow - 1 : nRow;
 		nCol = (int) Math.floor(gameL  / ((double) getTileSize()));
 		nCol = nCol%2==0 ? nCol - 1 : nCol;
-
-		nRow = 15;
-		nCol = 15;
 		
 		marginLeft = (gameL - nCol * (getTileSize())) / 2;
 		marginTop = HUD_HEIGHT;
@@ -265,29 +262,16 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 	}
 	
 	@Override
-	public void onDestroy() {
-	    super.onDestroy();
-	}
-	
-	@Override
 	public void onPause() {
+	    super.onPause();
 		if((!mScene.hasChildScene()) && (!gameEnded))
 			mScene.setChildScene(createPopupScene(),false,true,true);
 		
-
-		GiftizSDK.onPauseMainActivity(this); 
-	    super.onPause();
-	}
-	
-	@Override
-	public void onStop() {
-		super.onStop();
 	}
 	
 	@Override
 	public void onResume() {	
 		super.onResume();
-		GiftizSDK.onResumeMainActivity(this); 
 	}
 	
 	
@@ -297,7 +281,6 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
 		accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 		
-			
 		try {
 			TextureOptions opt = TextureOptions.BILINEAR_PREMULTIPLYALPHA;
 			
@@ -470,7 +453,7 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 					spawnPacX = x;
 					spawnPacY = y;
 				} else {
-					Sprite wall = tileMapper.getWallSprite(x, y, mScene);
+					Sprite wall = tileMapper.getWallSprite(getMarginLeft() + x*(getTileSize()), getMarginTop()+y*(getTileSize()),x,y, mScene);
 					PhysicsFactory.createBoxBody(this.mPhysicsWorld, wall, BodyType.StaticBody, wallFixtureDef);
 					sprWall.draw(wall);
 					//mScene.attachChild(wall);
@@ -532,30 +515,24 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 						    		new Timer().schedule(new TimerTask() {
 										@Override
 										public void run() {
-											targetSprite.setTextureRegion(mGhostEyesInvTextureRegion);
+											boolean tic=false;
+											
+											for(int i=0;i<6;i++) {
+												if(tic) 
+													targetSprite.setTextureRegion(mGhostEyesTextureRegion);
+												else 
+													targetSprite.setTextureRegion(mGhostEyesInvTextureRegion);
+												
+												tic = ! tic;
+												try {
+													Thread.sleep(500);
+												} catch (InterruptedException e) {
+													e.printStackTrace();
+												}
+											}
 										}
-						    		}, 8000);
+						    		}, 7000);
 						    		
-						    		new Timer().schedule(new TimerTask() {
-										@Override
-										public void run() {
-											targetSprite.setTextureRegion(mGhostEyesTextureRegion);
-										}
-						    		}, 8500);
-						    		
-						    		new Timer().schedule(new TimerTask() {
-										@Override
-										public void run() {
-											targetSprite.setTextureRegion(mGhostEyesInvTextureRegion);
-										}
-						    		}, 9000);
-						    		
-						    		new Timer().schedule(new TimerTask() {
-										@Override
-										public void run() {
-											targetSprite.setTextureRegion(mGhostEyesTextureRegion);
-										}
-						    		}, 9500);
 						    	} else if(ghosts.get(other).getTextureRegion() != mGhostEyesTextureRegion){ // Pacman is killed by a non-dead ghost
 									nVies--;
 									pacmanShape.detachSelf();
@@ -578,11 +555,12 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 											if(((ghostX >= spawnPacX - 1)&&(ghostX <= spawnPacX + 1)&&(ghostY >= spawnPacY -1)&&(ghostY <= spawnPacY+1))&&(ghost.getTextureRegion() != mGhostEyesTextureRegion)&&(ghost.getTextureRegion() != mGhostEyesInvTextureRegion)) {
 												Sprite ghostSprite = new Sprite(getMarginLeft()+spawnGhostX*getTileSize(),getMarginTop()+ spawnGhostY*getTileSize(),ghost.getTextureRegion(),GameActivity.this.getVertexBufferObjectManager());
 												ghostSprite.setZIndex(42);
-												toAdd.add(new Pair<Body,Sprite>(createGhostBody(mScene,ghostSprite), ghostSprite));
-												
 												ghost.detachSelf();
 												toRemove.add(body);
 												mPhysicsWorld.destroyBody(body);
+												
+												toAdd.add(new Pair<Body,Sprite>(createGhostBody(mScene,ghostSprite), ghostSprite));
+												toAdd.lastElement().first.setGravityScale(mGhostGravityScale);
 											}
 										}
 										
@@ -600,10 +578,7 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 							        	intent.putExtra(SCORE, mScore);
 							        	
 							        	intent.putExtra(MenuActivity.LEVEL, mLevel);
-							        	intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-							        	
-							        	
-					                    
+
 										startActivity(intent);
 										finish();
 									}
@@ -669,14 +644,14 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 
 	@Override
 	public void onResumeGame() {
-		sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
 		super.onResumeGame();
+		sensorManager.registerListener(this, accelerometer, SensorManager.SENSOR_DELAY_GAME);
 	}
 	
 	@Override
 	public void onPauseGame() {
-		sensorManager.unregisterListener(this, accelerometer);
 		super.onPauseGame();
+		sensorManager.unregisterListener(this, accelerometer);
 	}
 
 	@Override

@@ -12,6 +12,13 @@ public class LevelManager {
 	}
 	
 	public void loadValues() {
+		LevelSet level0 = new LevelSet();
+		level0.maxWallLenght=1;
+		level0.ghostAttractDivFactor=10000f;
+		level0.ghostGravityScale=0.2f;
+		level0.pacmanGravityScale=1f;
+		level0.pointValue=10;
+		
 		LevelSet level1 = new LevelSet();
 		level1.maxWallLenght=7;
 		level1.ghostAttractDivFactor=10000f;
@@ -90,6 +97,7 @@ public class LevelManager {
 		
 		
 
+		values.put(0, level0);
 		values.put(1, level1);
 		values.put(2, level2);
 		values.put(3, level3);

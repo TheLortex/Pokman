@@ -10,6 +10,7 @@ import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegion
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.util.GLState;
+import org.andengine.ui.activity.SimpleBaseGameActivity;
 
 public class TileMapping {
 	
@@ -21,16 +22,17 @@ public class TileMapping {
 	private TextureRegion mWallD;
 	private TextureRegion mWallG;
 
-	private GameActivity mParent;
 	private MazeGenerator map;
 	private int margWallX;
 	private int margWallY;
+
+	private SimpleBaseGameActivity mParent;
 	
-	TileMapping(MazeGenerator maze,GameActivity parent) {
+	TileMapping(MazeGenerator maze,SimpleBaseGameActivity parent) {
 		mParent = parent;
 		map = maze;
 	}
-	
+
 	public void loadTextures() throws IOException {
 		this.mBitmapTextureAtlas = new BitmapTextureAtlas(mParent.getTextureManager(), 256, 256, TextureOptions.NEAREST_PREMULTIPLYALPHA);
 		//mBitmapTextureAtlas.
@@ -57,9 +59,9 @@ public class TileMapping {
 		mParent.getEngine().getTextureManager().loadTexture(mBitmapTextureAtlas);
 	}
 	
-	public Sprite getWallSprite(int x, int y,Scene scene) {
-		ITextureRegion wallTexture = selectTexture(x,y);
-		Sprite wall = new Sprite(mParent.getMarginLeft() + x*(mParent.getTileSize()) + margWallX,mParent.getMarginTop()+y*(mParent.getTileSize()) + margWallY,wallTexture,mParent.getVertexBufferObjectManager());
+	public Sprite getWallSprite(int posX, int posY,int gridX, int gridY,Scene scene) {
+		ITextureRegion wallTexture = selectTexture(gridX,gridY);
+		Sprite wall = new Sprite(posX+ margWallX,posY + margWallY,wallTexture,mParent.getVertexBufferObjectManager());
 		
 		return wall;
 	}
