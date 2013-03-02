@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="btn_startgame">JOUER</string>
+    <string name="btn_tuto">TUTORIEL</string>
+    <string name="btn_settings">OPTIONS</string>
+    <string name="btn_feedback">Commentaire</string>
+    <string name="btn_credit">Par Lortexgames - CREDITS</string>
+    <string name="btn_version">Bêta 0.6.2</string>
+    <string name="btn_quit">QUITTER</string>
+    <string name="choose_level_dialog">Choisissez le niveau</string>
+</resources>

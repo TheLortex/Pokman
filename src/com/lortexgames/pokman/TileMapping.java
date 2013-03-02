@@ -9,7 +9,6 @@ import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.texture.region.TextureRegion;
-import org.andengine.opengl.util.GLState;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 
 public class TileMapping {
@@ -137,5 +136,10 @@ public class TileMapping {
 		}
 		
 		return selected;
+	}
+
+	public void release() {
+		mBitmapTextureAtlas.clearTextureAtlasSources();
+		mBitmapTextureAtlas.unload();
 	}
 }

@@ -7,6 +7,7 @@ import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 
+import android.graphics.Color;
 import android.util.SparseArray;
 
 public class FontManager {
@@ -20,7 +21,7 @@ public class FontManager {
 	}
 	
 	public void load(int size, int color) {
-		final ITexture fontNormTexture = new BitmapTextureAtlas(parent.getTextureManager(), 512, 512, TextureOptions.BILINEAR);
+		final ITexture fontNormTexture = new BitmapTextureAtlas(parent.getTextureManager(), 512, 512, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
 		Font fontTR = FontFactory.createFromAsset(parent.getFontManager(), fontNormTexture, parent.getAssets(), file,(float) size, true, color);
 		fontTR.load();
 		if(fonts.get(size) == null) {
@@ -32,7 +33,15 @@ public class FontManager {
 		}
 	}
 	
+	public void load(int size) {
+		load(size,Color.WHITE);
+	}
+	
 	public Font get(int size, int color) {
 		return fonts.get(size).get(color);
+	}
+	
+	public Font get(int size) {
+		return get(size,Color.WHITE);
 	}
 }

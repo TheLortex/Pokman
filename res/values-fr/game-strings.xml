@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="get_ready">GET READY</string>
+    <string name="game_pause_title">PAUSE</string>
+    <string name="game_pause_resume">REPRENDRE</string>
+    <string name="game_pause_restart">REJOUER</string>
+    <string name="game_pause_menu">MENU</string>
+</resources>

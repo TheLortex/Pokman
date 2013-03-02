@@ -177,15 +177,16 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 	private float mGhostAttractDivFactor;
 	private int mWinPoints;
 	private TextureRegion mStartTextBackgroundTextureRegion;
-	private boolean mFirstTime;
-	private TextureRegion mStartArrowTextureRegion;
-
+	
 	private float[] rawValues = {0,0};
 	private float[] realValues= {0,0};
 
 	private Vector2 gravity;
-
 	private Vector2 force;
+
+	private int mVulDuration;
+
+	private int mBlinkTime;
 
 	
 	@Override
@@ -236,12 +237,12 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		gameH = MenuActivity.SCREENHEIGHT-HUD_HEIGHT;
 		gameL =  MenuActivity.SCREENWIDTH;
 
-		nRow = (int) Math.floor(gameH/ ((double) getTileSize()));
+		nRow = (int) Math.floor(gameH/ ((double) TILE_SIZE));
 		nRow = nRow%2==0 ? nRow - 1 : nRow;
-		nCol = (int) Math.floor(gameL  / ((double) getTileSize()));
+		nCol = (int) Math.floor(gameL  / ((double) TILE_SIZE));
 		nCol = nCol%2==0 ? nCol - 1 : nCol;
 		
-		marginLeft = (gameL - nCol * (getTileSize())) / 2;
+		marginLeft = (gameL - nCol * (TILE_SIZE)) / 2;
 		marginTop = HUD_HEIGHT;
 
 		ghosts = new HashMap<Body,Sprite> ();
@@ -274,6 +275,32 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		super.onResume();
 	}
 	
+	@Override
+	public void onDestroy() {	
+		super.onDestroy();
+		mScene.detachChildren();
+		mScene.reset();
+		tileMapper.release();
+		
+		mPacmanMangeTextureRegion.getTexture().unload();
+		mPacmanMangeTextureRegion.getTexture().unload();
+		mRedGhostTextureRegion.getTexture().unload();
+		mBlueGhostTextureRegion.getTexture().unload();
+		mPinkGhostTextureRegion.getTexture().unload();
+		mOrangeGhostTextureRegion.getTexture().unload();
+		mBonusPointTextureRegion.getTexture().unload();
+		mVulGhost1TextureRegion.getTexture().unload();
+		mVulGhost2TextureRegion.getTexture().unload();
+		mGhostEyesTextureRegion.getTexture().unload();
+		mGhostEyesInvTextureRegion.getTexture().unload();
+		mPointTextureRegion.getTexture().unload();
+		mPacmanTextureRegion.getTexture().unload();
+		mPopupBackgroundTextureRegion.getTexture().unload();
+		mStartTextBackgroundTextureRegion.getTexture().unload();
+		
+		soundPool.release();
+	}
+	
 	
 	@Override
 	protected void onCreateResources() {
@@ -298,8 +325,7 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 			ITexture pacmanTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/newgfx/pacman.png");}},opt);
 			ITexture popupBackgroundTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/bg_popup.png");}},opt);
 			ITexture startTextBackgroundTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/bg_start_text.png");}});
-			ITexture startArrowTexture = new BitmapTexture(this.getTextureManager(),new IInputStreamOpener() { @Override public InputStream open() throws IOException {return getAssets().open("gfx/arrow.png");}});
-
+			
 			
 			pacmanMangeTexture.load();
 			redGhostTexture.load();
@@ -315,7 +341,6 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 			pacmanTexture.load();
 			popupBackgroundTexture.load();
 			startTextBackgroundTexture.load();
-			startArrowTexture.load();
 			
 			mPacmanMangeTextureRegion = TextureRegionFactory.extractFromTexture(pacmanMangeTexture);
 			mRedGhostTextureRegion = TextureRegionFactory.extractFromTexture(redGhostTexture);
@@ -331,7 +356,6 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 			mPacmanTextureRegion = TextureRegionFactory.extractFromTexture(pacmanTexture);
 			mPopupBackgroundTextureRegion = TextureRegionFactory.extractFromTexture(popupBackgroundTexture);
 			mStartTextBackgroundTextureRegion = TextureRegionFactory.extractFromTexture(startTextBackgroundTexture);
-			mStartArrowTextureRegion = TextureRegionFactory.extractFromTexture(startArrowTexture);
 			
 			
 		} catch (IOException e1) {
@@ -361,6 +385,8 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		this.mPacmanGravityScale=values.pacmanGravityScale;
 		this.mPointValue=values.pointValue;
 		this.mWinPoints=values.winPoints;
+		this.mVulDuration=values.vulDuration;
+		this.mBlinkTime=values.blinkTime;
 	}
 
 	@Override
@@ -376,13 +402,7 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		audio.release();
 
 		SharedPreferences settings = this.getSharedPreferences(MenuActivity.PREFS_NAME, 0);
-		mFirstTime=settings.getBoolean("firstPlay", true);
-		Editor editor = settings.edit();
-		editor.putBoolean("firstPlay", false);
-		editor.commit();
 
-		if(mFirstTime)
-			duration = 5000;
 		
 		new Timer().schedule(new TimerTask() {
 			@Override
@@ -413,9 +433,9 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 				points.add(new SparseArray<Sprite>());
 				
 				if(mazeGen.value(x, y) == Element.POINT) {
-					addPoint(mScene,getMarginLeft() + x*(getTileSize()) + getTileSize()/2, getMarginTop()+y*(getTileSize()) + getTileSize()/2);
+					addPoint(mScene,marginLeft + x*(TILE_SIZE) + TILE_SIZE/2, marginTop+y*(TILE_SIZE) + TILE_SIZE/2);
 				} else if(mazeGen.value(x, y) == Element.BONUS) {
-					addBonusPoint(mScene,getMarginLeft() + x*(getTileSize()) + getTileSize()/2, getMarginTop()+y*(getTileSize()) + getTileSize()/2);
+					addBonusPoint(mScene,marginLeft + x*(TILE_SIZE) + TILE_SIZE/2, marginTop+y*(TILE_SIZE) + TILE_SIZE/2);
 				} else if(mazeGen.value(x, y) == Element.SPAWNGHOST){
 					if(spawnGhostX == -1)
 						spawnGhostX = x;
@@ -438,12 +458,12 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 						break;
 					}
 					
-					Sprite ghostSprite = new Sprite(getMarginLeft()+x*getTileSize(),getMarginTop()+ y*getTileSize(),selTexture,this.getVertexBufferObjectManager());
+					Sprite ghostSprite = new Sprite(marginLeft+x*TILE_SIZE,marginTop+ y*TILE_SIZE,selTexture,this.getVertexBufferObjectManager());
 					ghostSprite.setZIndex(42);
 					ghosts.put(createGhostBody(mScene,ghostSprite), ghostSprite);
 					
 				} else if(mazeGen.value(x, y) == Element.SPAWNPAC){
-					Rectangle pacspwn = new Rectangle(getMarginLeft() + x*TILE_SIZE, getMarginTop()+y*TILE_SIZE,TILE_SIZE, TILE_SIZE,this.getVertexBufferObjectManager());
+					Rectangle pacspwn = new Rectangle(marginLeft + x*TILE_SIZE, marginTop+y*TILE_SIZE,TILE_SIZE, TILE_SIZE,this.getVertexBufferObjectManager());
 					pacspwn.setColor(0.1f,0.1f,0.1f);
 					mScene.attachChild(pacspwn);
 
@@ -453,7 +473,7 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 					spawnPacX = x;
 					spawnPacY = y;
 				} else {
-					Sprite wall = tileMapper.getWallSprite(getMarginLeft() + x*(getTileSize()), getMarginTop()+y*(getTileSize()),x,y, mScene);
+					Sprite wall = tileMapper.getWallSprite(marginLeft + x*(TILE_SIZE), marginTop+y*(TILE_SIZE),x,y, mScene);
 					PhysicsFactory.createBoxBody(this.mPhysicsWorld, wall, BodyType.StaticBody, wallFixtureDef);
 					sprWall.draw(wall);
 					//mScene.attachChild(wall);
@@ -553,7 +573,7 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 	
 											
 											if(((ghostX >= spawnPacX - 1)&&(ghostX <= spawnPacX + 1)&&(ghostY >= spawnPacY -1)&&(ghostY <= spawnPacY+1))&&(ghost.getTextureRegion() != mGhostEyesTextureRegion)&&(ghost.getTextureRegion() != mGhostEyesInvTextureRegion)) {
-												Sprite ghostSprite = new Sprite(getMarginLeft()+spawnGhostX*getTileSize(),getMarginTop()+ spawnGhostY*getTileSize(),ghost.getTextureRegion(),GameActivity.this.getVertexBufferObjectManager());
+												Sprite ghostSprite = new Sprite(marginLeft+spawnGhostX*TILE_SIZE,marginTop+ spawnGhostY*TILE_SIZE,ghost.getTextureRegion(),GameActivity.this.getVertexBufferObjectManager());
 												ghostSprite.setZIndex(42);
 												ghost.detachSelf();
 												toRemove.add(body);
@@ -628,8 +648,8 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		while(it.hasNext()) 
 			it.next().setGravityScale(mGhostGravityScale);
 		
-		readyText.setAlpha(0f);
-		readyTextBackground.setAlpha(0f);
+		readyText.setVisible(false);
+		readyTextBackground.setVisible(false);
 		pacman.setGravityScale(1f);
 
 		/*if((percentageMusic>0)&&(!paused))
@@ -699,7 +719,7 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		objectFixtureDef.filter.categoryBits= CATEGORY_PACMAN;
 		objectFixtureDef.filter.maskBits= CATEGORY_GHOST | CATEGORY_SCENERY;
 		
-		Sprite pacmanSprite = new Sprite(getMarginLeft()+x*getTileSize(), getMarginTop()+y*getTileSize(),this.mPacmanTextureRegion,this.getVertexBufferObjectManager());
+		Sprite pacmanSprite = new Sprite(marginLeft+x*TILE_SIZE, marginTop+y*TILE_SIZE,this.mPacmanTextureRegion,this.getVertexBufferObjectManager());
 		pacmanSprite.setZIndex(42);
 		pacmanShape = pacmanSprite;
 		final Body body = PhysicsFactory.createCircleBody(this.mPhysicsWorld, pacmanSprite, BodyType.DynamicBody, objectFixtureDef);
@@ -807,30 +827,22 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 			levelText.setX((float) ((fScoreText.getWidth() + fScoreText.getX()) + ((MenuActivity.SCREENWIDTH - fScoreText.getWidth() - fScoreText.getX())/2.0) - levelText.getWidth()/2.0));
 			
 			scene.attachChild(levelText);
-			
-			
-			if(mFirstTime) {
-				startArrowSprite = new Sprite(MenuActivity.SCREENWIDTH/2f+60,MenuActivity.SCREENHEIGHT/2f-mStartArrowTextureRegion.getHeight()+20,mStartArrowTextureRegion,this.getVertexBufferObjectManager());
-				scene.attachChild(startArrowSprite);
-			}
+		
 
-			String readyTextMsg=mFirstTime?"You are here !":"GET READY";
+			String readyTextMsg="GET READY";
 			
-			readyText = new Text(0,0,font.get(mFirstTime?40:66, Color.WHITE),readyTextMsg,getVertexBufferObjectManager());
+			readyText = new Text(0,0,font.get(66),readyTextMsg,getVertexBufferObjectManager());
 			readyText.setColor(1f,1f,0f);
 			readyText.setX(MenuActivity.SCREENWIDTH/2f - readyText.getWidth()/2f);
-			if(mFirstTime)
-				readyText.setY(MenuActivity.SCREENHEIGHT - readyText.getHeight() - 300);
-			else 
-				readyText.setY(MenuActivity.SCREENHEIGHT/2f - readyText.getHeight()/2f);
+			readyText.setY(MenuActivity.SCREENHEIGHT/2f - readyText.getHeight()/2f);
 			
 			
-			readyText.setAlpha(0f);
+			readyText.setVisible(false);
 			readyText.setZIndex(1500);
 			
 			readyTextBackground = new Sprite(readyText.getX()+readyText.getWidth()/2f-mStartTextBackgroundTextureRegion.getWidth()/2f,readyText.getY()+readyText.getHeight()/2f-mStartTextBackgroundTextureRegion.getHeight()/2f,this.mStartTextBackgroundTextureRegion,this.getVertexBufferObjectManager());
-			
-			readyTextBackground.setAlpha(0f);
+
+			readyTextBackground.setVisible(false);
 			readyTextBackground.setZIndex(1000);
 			scene.attachChild(readyTextBackground);
 			scene.attachChild(readyText);
@@ -838,8 +850,8 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 			new Timer().schedule(new TimerTask() {
 				@Override
 				public void run() {
-					readyText.setAlpha(1.0f);
-					readyTextBackground.setAlpha(1.0f);
+					readyTextBackground.setVisible(true);
+					readyText.setVisible(true);
 				}
 			}, 500);
 		}
@@ -905,14 +917,14 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 							nbKill=0;
 						}
 					}
-				}, 20000);
+				}, mVulDuration);
 				
 				new Timer().schedule(new TimerTask(){
 					@Override
 					public void run() {
 						blinkLoop(true);
 					}
-				}, 15000);
+				}, mBlinkTime);
 			}
 		}
 		
@@ -1118,11 +1130,11 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		bg.setAlpha(0.95f);
 		popup.attachChild(bg);
 		
-		Text pauseText = new Text(0,baseY+100,font.get(66, Color.WHITE),"PAUSE",this.getVertexBufferObjectManager());
+		Text pauseText = new Text(0,baseY+100,font.get(66, Color.WHITE),getResources().getString(R.string.game_pause_title),this.getVertexBufferObjectManager());
 		pauseText.setX(baseX + (sceneWidth/2f - pauseText.getWidth()/2f));
 		popup.attachChild(pauseText);
 		
-		resumeText = new Text(0,baseY+290,font.get(48, Color.WHITE),"RESUME",this.getVertexBufferObjectManager()) {
+		resumeText = new Text(0,baseY+290,font.get(48, Color.WHITE),getResources().getString(R.string.game_pause_resume),this.getVertexBufferObjectManager()) {
 			@Override
 		    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
 				if ((pSceneTouchEvent.isActionDown())||(pSceneTouchEvent.isActionMove()))
@@ -1145,7 +1157,7 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		popup.attachChild(resumeText);
 		popup.registerTouchArea(resumeText);
 		
-		restartText = new Text(0,baseY+450,font.get(48, Color.WHITE),"RESTART",this.getVertexBufferObjectManager()) {
+		restartText = new Text(0,baseY+450,font.get(48, Color.WHITE),getResources().getString(R.string.game_pause_restart),this.getVertexBufferObjectManager()) {
 			@Override
 		    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
 				if ((pSceneTouchEvent.isActionDown())||(pSceneTouchEvent.isActionMove()))
@@ -1171,7 +1183,7 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		popup.attachChild(restartText);
 		popup.registerTouchArea(restartText);
 		
-		menuText = new Text(0,baseY+610,font.get(48, Color.WHITE),"MENU",this.getVertexBufferObjectManager()){
+		menuText = new Text(0,baseY+610,font.get(48, Color.WHITE),getResources().getString(R.string.game_pause_menu),this.getVertexBufferObjectManager()){
 			@Override
 		    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {		
 				if ((pSceneTouchEvent.isActionDown())||(pSceneTouchEvent.isActionMove()))

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resources>
-    <style name="themeSelector" parent="android:Theme">
+    <style name="themeSelector" parent="android:Theme.Holo">
         <item name="android:windowBackground">@null</item>
 	</style>
 </resources>

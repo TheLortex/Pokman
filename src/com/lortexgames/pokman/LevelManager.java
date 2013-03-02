@@ -46,6 +46,8 @@ public class LevelManager {
 		level4.ghostGravityScale=0.9f;
 		level4.pacmanGravityScale=1.1f;
 		level4.pointValue=13;
+		level4.vulDuration=14000;
+		level4.blinkTime=10000;
 		
 		LevelSet level5 = new LevelSet();
 		level5.maxWallLenght=3;
@@ -53,6 +55,8 @@ public class LevelManager {
 		level5.ghostGravityScale=0.2f;
 		level5.pacmanGravityScale=1.1f;
 		level5.pointValue=14;
+		level5.vulDuration=13000;
+		level5.blinkTime=9000;
 		
 		LevelSet level6 = new LevelSet();
 		level6.maxWallLenght=11;
@@ -61,6 +65,8 @@ public class LevelManager {
 		level6.pacmanGravityScale=1.2f;
 		level6.winPoints=1500;
 		level6.pointValue=15;
+		level6.vulDuration=12000;
+		level6.blinkTime=8000;
 		
 		LevelSet level7 = new LevelSet();
 		level7.maxWallLenght=5;
@@ -69,6 +75,8 @@ public class LevelManager {
 		level7.pacmanGravityScale=1f;
 		level7.winPoints=2000;
 		level7.pointValue=18;
+		level7.vulDuration=11000;
+		level7.blinkTime=7000;
 		
 		LevelSet level8 = new LevelSet();
 		level8.maxWallLenght=7;
@@ -77,6 +85,8 @@ public class LevelManager {
 		level8.pacmanGravityScale=1f;
 		level8.winPoints=3000;
 		level8.pointValue=20;
+		level8.vulDuration=10000;
+		level8.blinkTime=6000;
 		
 		LevelSet level9 = new LevelSet();
 		level9.maxWallLenght=5;
@@ -85,6 +95,8 @@ public class LevelManager {
 		level9.pacmanGravityScale=1f;
 		level9.winPoints=5000;
 		level9.pointValue=25;
+		level9.vulDuration=9000;
+		level9.blinkTime=5000;
 		
 		LevelSet level10 = new LevelSet();
 		level10.maxWallLenght=3;
@@ -93,6 +105,8 @@ public class LevelManager {
 		level10.pacmanGravityScale=1.5f;
 		level10.winPoints=10000;
 		level10.pointValue=30;
+		level10.vulDuration=8000;
+		level10.blinkTime=4000;
 		
 		
 		

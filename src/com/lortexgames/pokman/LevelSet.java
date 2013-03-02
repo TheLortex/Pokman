@@ -9,4 +9,6 @@ public class LevelSet {
 	public int maxWallLenght=5;
 	public int winPoints=1000;
 	public int pointValue=10;
+	public int vulDuration=20000;
+	public int blinkTime=16000;
 }

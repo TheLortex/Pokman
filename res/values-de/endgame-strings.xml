@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="end_win_title">WIN</string>
+    <string name="end_lose_title">GAME OVER</string>
+    <string name="end_tryagain">TRY AGAIN</string>
+    <string name="end_menu">MENU</string>
+    <string name="end_highscore">HIGH SCORES</string>
+    <string name="end_local">LOCAL</string>
+    <string name="end_global">GLOBAL</string>
+    <string name="end_err_nowifi">NO WIFI</string>
+    <string name="end_err_notenabled">DISABLED</string>
+    <string name="end_err_nonetwork">NO NETWORK</string>
+    <string name="end_entername">Enter name</string>
+    <string name="hinthighscore">Enter your name</string>
+</resources>

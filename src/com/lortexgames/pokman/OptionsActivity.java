@@ -25,7 +25,9 @@ import org.andengine.opengl.texture.region.TextureRegionFactory;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.util.adt.io.in.IInputStreamOpener;
 
+import android.app.AlertDialog;
 import android.app.Service;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Vibrator;
@@ -36,21 +38,27 @@ import android.widget.Toast;
 
 public class OptionsActivity extends SimpleBaseGameActivity {
 
+	public final static int IU_NEVER = 0;
+	public final static int IU_WIFI_ONLY = 1;
+	public final static int IU_ALWAYS = 2;
+	
+	private int mInternetUsage;
+	
 	private Camera camera;
 	private Font mFont;
 	private Font mFontBig;
-	//private Text percentageMusicVolum;
 	private Text percentageGfxVolum;
-	//private Sprite slidingMusic;
 	private Sprite slidingGfx;
 	private TextureRegion mBtnTexture;
-	//private Rectangle fixSliderMusic;
 	private Rectangle fixSliderGfx;
 
 	private int percentageGfx;
 	private boolean calibration;
 	private IFont mFontReturn;
 	private Text returnButton;
+	private Text internetUsageText;
+	/*private Text anonymousData;
+	private boolean mAnonymousData;*/
 
 
 	@Override
@@ -69,7 +77,7 @@ public class OptionsActivity extends SimpleBaseGameActivity {
 		this.mFontBig = FontFactory.createFromAsset(this.getFontManager(), fontTextureBig, this.getAssets(), "police.ttf", 60f, true, Color.WHITE);
 		this.mFontBig.load();
 		
-		this.mFont = FontFactory.createFromAsset(this.getFontManager(), fontTexture, this.getAssets(), "police.ttf", 30f, true, Color.WHITE);
+		this.mFont = FontFactory.createFromAsset(this.getFontManager(), fontTexture, this.getAssets(), "police.ttf", 36f, true, Color.WHITE);
 		this.mFont.load();
 		this.mFontReturn = FontFactory.createFromAsset(this.getFontManager(), fontReturnTexture, this.getAssets(), "police.ttf", 42f, true, Color.WHITE);
 		this.mFontReturn.load();
@@ -96,13 +104,11 @@ public class OptionsActivity extends SimpleBaseGameActivity {
 		final boolean hapticFeedback = System.getInt(this.getContentResolver(), Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) != 0;
 		
 		// Texts
-		Text titleOptions = new Text(0, 50, mFontBig, "SETTINGS", this.getVertexBufferObjectManager());
+		Text titleOptions = new Text(0, 50, mFontBig, getResources().getString(R.string.title_settings), this.getVertexBufferObjectManager());
 		titleOptions.setX((float) (0.5*MenuActivity.SCREENWIDTH - titleOptions.getWidth()/2.0));
 		
-		//Text musicVolum = new Text(30, 350, mFont, "MUSIC", this.getVertexBufferObjectManager());
-		
-		Text gfxVolum = new Text(30, 550, mFont, "SFX", this.getVertexBufferObjectManager());
-		returnButton = new Text(0, 0, mFontReturn, "RETURN", this.getVertexBufferObjectManager()){
+		Text gfxVolum = new Text(30, 550, mFont, getResources().getString(R.string.settings_sfx), this.getVertexBufferObjectManager());
+		returnButton = new Text(0, 0, mFontReturn, getResources().getString(R.string.btn_return), this.getVertexBufferObjectManager()){
 			@Override
 		    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
 				if ((pSceneTouchEvent.isActionDown())||(pSceneTouchEvent.isActionMove()))
@@ -130,39 +136,16 @@ public class OptionsActivity extends SimpleBaseGameActivity {
 		scene.registerTouchArea(returnButton);
 		
 		// Sliders
-		//percentageMusicVolum = new Text(0, musicVolum.getY() + musicVolum.getHeight() + 50, mFont, "100%", this.getVertexBufferObjectManager());
-	//	percentageMusicVolum.setX(MenuActivity.SCREENWIDTH - percentageMusicVolum.getWidth() - 30);
-	//	percentageMusicVolum.setY((float) (percentageMusicVolum.getY() - percentageMusicVolum.getHeight()/4.0)); 
 		percentageGfxVolum = new Text(0, gfxVolum.getY() + gfxVolum.getHeight() + 50, mFont, "100%", this.getVertexBufferObjectManager());
 		percentageGfxVolum.setX(MenuActivity.SCREENWIDTH - percentageGfxVolum.getWidth() - 30);
 		percentageGfxVolum.setY((float) (percentageGfxVolum.getY() - percentageGfxVolum.getHeight()/4.0));
-		//scene.attachChild(percentageMusicVolum);
 		scene.attachChild(percentageGfxVolum);
 		
-	//	fixSliderMusic = new Rectangle(musicVolum.getX(), musicVolum.getY() + musicVolum.getHeight() + 50, MenuActivity.SCREENWIDTH - musicVolum.getX() * 2 - percentageMusicVolum.getWidth() - 30, 15, this.getVertexBufferObjectManager());
-		//fixSliderMusic.setColor(0.8f, 0.8f, 0.8f);
-	//	scene.attachChild(fixSliderMusic);
 		fixSliderGfx = new Rectangle(gfxVolum.getX(), gfxVolum.getY() + gfxVolum.getHeight() + 50, MenuActivity.SCREENWIDTH - gfxVolum.getX() * 2 - percentageGfxVolum.getWidth() - 30, 15, this.getVertexBufferObjectManager());
 		fixSliderGfx.setColor(0.8f, 0.8f, 0.8f);
 		scene.attachChild(fixSliderGfx);
 		
 		
-	/*	slidingMusic = new Sprite((float) (MenuActivity.SCREENWIDTH / 2.0),(float) (fixSliderMusic.getHeight() / 2.0 +fixSliderMusic.getY() - mBtnTexture.getHeight() / 2.0),mBtnTexture,this.getVertexBufferObjectManager()){
-			@Override
-		    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
-		        float xTouchEvent = pSceneTouchEvent.getX();
-				if(xTouchEvent<fixSliderMusic.getX()+10)
-					xTouchEvent = fixSliderMusic.getX()+10;
-				else if(xTouchEvent>fixSliderMusic.getX()+fixSliderMusic.getWidth()-10)
-					xTouchEvent = fixSliderMusic.getX()+fixSliderMusic.getWidth()-10;
-					
-				slidingMusic.setX(xTouchEvent - mBtnTexture.getWidth()/2 );
-				
-				percentageMusic = Math.round(((xTouchEvent-fixSliderMusic.getX()-10)/(fixSliderMusic.getWidth()-20))*100);
-				percentageMusicVolum.setText(String.format("%03d", percentageMusic)+"%");
-			    return true;
-		    }
-		};*/
 		slidingGfx = new Sprite((float) (MenuActivity.SCREENWIDTH / 2.0),(float) (fixSliderGfx.getHeight() / 2.0 +fixSliderGfx.getY() - mBtnTexture.getHeight() / 2.0),mBtnTexture,this.getVertexBufferObjectManager()){
 
 			@Override
@@ -182,37 +165,80 @@ public class OptionsActivity extends SimpleBaseGameActivity {
 		};
 		
 
-		//scene.attachChild(slidingMusic);
 		scene.attachChild(slidingGfx);
-
-		//scene.registerTouchArea(slidingMusic);
 		scene.registerTouchArea(slidingGfx);
-		
 		restorePrefs();
 		
-		/*calibrationText = new Text(30, 850, mFont, "AUTO-CALIBRATION: "+((calibration)?"ON":"OFF"), this.getVertexBufferObjectManager()) {
-			@Override
-		    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
-				if(pSceneTouchEvent.isActionDown()) {
-					calibration = !calibration;
-					calibrationText.setText("AUTO-CALIBRATION: "+((calibration)?"ON":"OFF"));
-					return true;
-				}
-				return false;
+		internetUsageText = new Text(30, 350, mFont, "XXXXXXXXXXXXXXXXXXXXXXXXX", this.getVertexBufferObjectManager()) {
+			public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
+				if ((pSceneTouchEvent.isActionDown())||(pSceneTouchEvent.isActionMove()))
+		        	this.setColor(1f,1f,0f);
+		        else if(pSceneTouchEvent.isActionUp()) {
+		        	if(hapticFeedback) {
+			        	Vibrator v = (Vibrator) OptionsActivity.this.getApplicationContext().getSystemService(Service.VIBRATOR_SERVICE);
+			        	v.vibrate(100);
+		        	}
+		        	
+		        	OptionsActivity.this.runOnUiThread(new Runnable() {
+						@Override
+						public void run() {
+							new AlertDialog.Builder(OptionsActivity.this)
+				            .setSingleChoiceItems(R.array.settings_internet_usage_items,
+				            		mInternetUsage,
+				                    new DialogInterface.OnClickListener() {
+										@Override
+										public void onClick(DialogInterface dialog, int selectedItem) {
+											mInternetUsage=selectedItem;
+											updateIUText();
+											dialog.dismiss();
+										}
+				                    })
+				           .show();
+						}
+		        		
+		        	});
+		        	
+		        	this.setColor(1f,1f,1f);
+		        }
+	        return true;
 			}
 		};
-		scene.attachChild(calibrationText);
-		scene.registerTouchArea(calibrationText);*/
 		
+		updateIUText();
+		
+		scene.attachChild(internetUsageText);
+		scene.registerTouchArea(internetUsageText);
+		
+	/*	anonymousData = new Text(30, 650, mFont, mAnonymousData ? R.string.settings_anon_data_on : R.string.settings_anon_data_off, this.getVertexBufferObjectManager()) {
+			public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
+				if ((pSceneTouchEvent.isActionDown())||(pSceneTouchEvent.isActionMove()))
+		        	this.setColor(1f,1f,0f);
+		        else if(pSceneTouchEvent.isActionUp()) {
+		        	
+		        	
+		        	this.setColor(1f,1f,1f);
+		        }
+	        return true;
+			}
+		};
+		*/
 		scene.setOnSceneTouchListener(new IOnSceneTouchListener() {
 			@Override
 			public boolean onSceneTouchEvent(Scene pScene,
 					TouchEvent pSceneTouchEvent) {
 				returnButton.setColor(1f,1f,1f);
+				internetUsageText.setColor(1f,1f,1f);
+				//anonymousData.setColor(1f,1f,1f);
 				return false;
 			}
 		});
 		return scene;
+	}
+	
+	private void updateIUText() {
+		if((mInternetUsage>=0)&&(mInternetUsage<=2))
+			internetUsageText.setText(getResources().getStringArray(R.array.settings_internet_usage_array)[mInternetUsage]);
+		
 	}
 	
 	public void onBackPressed() {
@@ -223,27 +249,30 @@ public class OptionsActivity extends SimpleBaseGameActivity {
 		SharedPreferences settings = getSharedPreferences(MenuActivity.PREFS_NAME, 0);
 		SharedPreferences.Editor editor = settings.edit();
 	    editor.putInt("sfx", percentageGfx);
-	  //  editor.putInt("music", percentageMusic);
+		editor.putInt("internetUsage", mInternetUsage);
+	//	editor.putBoolean("anonymousData", mAnonymousData);
+
 	    editor.putBoolean("calibration", calibration);
 		editor.commit();
-		this.toastOnUIThread("Settings saved", Toast.LENGTH_SHORT);
+		this.toastOnUIThread(getResources().getString(R.string.settings_saved), Toast.LENGTH_SHORT);
 		finish();
 	}
 	
 	private void restorePrefs() {
 		SharedPreferences settings = getSharedPreferences(MenuActivity.PREFS_NAME, 0);
-	//	percentageMusic = settings.getInt("music", 100);
+
 		percentageGfx = settings.getInt("sfx", 100);
 		calibration = settings.getBoolean("calibration", true);
 
 		float placeSliderGfx = (float) (fixSliderGfx.getX() + (percentageGfx/100.0)*fixSliderGfx.getWidth() - mBtnTexture.getWidth()/2.0); 
-	//	float placeSliderMusic = (float) (fixSliderMusic.getX() + (percentageMusic/100.0)*fixSliderMusic.getWidth() - mBtnTexture.getWidth()/2.0); 
-	//	slidingMusic.setX(placeSliderMusic);
+
 		slidingGfx.setX(placeSliderGfx);
 
 		percentageGfxVolum.setText(String.format("%03d", percentageGfx)+"%");
-	//	percentageMusicVolum.setText(String.format("%03d", percentageMusic)+"%");
-		
+
+		mInternetUsage= settings.getInt("internetUsage", 1);
+		//mAnonymousData= settings.getBoolean("anonymousData", true);
+
 	}
 	
 }

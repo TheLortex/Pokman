@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="btn_return">RETOUR</string>
+    <string name="title_settings">OPTIONS</string>
+    <string name="settings_saved">Options sauvegardées</string>
+    <string name="settings_sfx">SONS</string>
+    <string-array name="settings_internet_usage_items">
+        <item >Jamais</item>
+        <item >Uniquement en Wifi</item>
+        <item >Toujours</item>
+    </string-array>
+    <string-array name="settings_internet_usage_array">
+        <item >INTERNET: JAMAIS</item>
+        <item >INTERNET: WIFI</item>
+        <item >INTERNET: TOUJOURS</item>
+    </string-array>
+</resources>

@@ -2,8 +2,12 @@ package com.lortexgames.pokman;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 import org.andengine.engine.camera.Camera;
+import org.andengine.engine.handler.IUpdateHandler;
 import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
@@ -13,11 +17,7 @@ import org.andengine.entity.scene.background.Background;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.entity.text.Text;
 import org.andengine.input.touch.TouchEvent;
-import org.andengine.opengl.font.Font;
-import org.andengine.opengl.font.FontFactory;
 import org.andengine.opengl.texture.ITexture;
-import org.andengine.opengl.texture.TextureOptions;
-import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.bitmap.BitmapTexture;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.texture.region.TextureRegion;
@@ -25,6 +25,14 @@ import org.andengine.opengl.texture.region.TextureRegionFactory;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.util.adt.io.in.IInputStreamOpener;
 import org.andengine.util.debug.Debug;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 
 import com.purplebrain.giftiz.sdk.GiftizSDK;
 import com.purplebrain.giftiz.sdk.GiftizSDK.Inner.ButtonNeedsUpdateDelegate;
@@ -37,6 +45,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.Vibrator;
 import android.provider.Settings;
 import android.provider.Settings.System;
@@ -51,13 +64,15 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 	static final int SCREENWIDTH=720;
 	static final int SCREENHEIGHT=1280;
 	private ITextureRegion mTitleTexture;
-	private Font mFont,mSmallFont;
+
 	private Sprite mTitle;
 	private Text quit;
 	private Text options;
 	private Text play;
 	private Text credit;
 	private Text feedbackText;
+	private Text howto;
+	private Text modtText;
 
 	private TextureRegion mGiftizLogoTextureRegion;
 	private TextureRegion mGiftizLogoWarningTextureRegion;
@@ -65,11 +80,19 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 	private Sprite giftizButton;
 	protected boolean buttonClicked;
 	private TextureRegion mGiftizNullTextureRegion;
-	private Text howto;
+	private FontManager font;
 	
-    public static final String PREFS_NAME = "PacmanPrefs";
+	private int mInternetUsage;
+	DefaultHttpClient client = new DefaultHttpClient();
+	ResponseHandler<String> responseHandler = new BasicResponseHandler();
+	private Handler asyncTaskHandler;
+	protected float timeElapsed;
+	protected boolean updateModt;
+	
+    public static final String PREFS_NAME = "PokmanPrefs";
     public final static String LEVEL = "com.lortexgames.pokman.LEVEL";
 	
+    public static boolean GIFTIZ_ENABLED=true;
 	
 	@Override
 	public EngineOptions onCreateEngineOptions() {
@@ -84,31 +107,31 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 			titleTexture.load();
 			this.mTitleTexture = TextureRegionFactory.extractFromTexture(titleTexture);
 			
-			ITexture giftizLogoTexture = new BitmapTexture(this.getTextureManager(), new IInputStreamOpener() {@Override public InputStream open() throws IOException { return getAssets().open("gfx/giftiz_logo.png");} });
-			giftizLogoTexture.load();
-			this.mGiftizLogoTextureRegion = TextureRegionFactory.extractFromTexture(giftizLogoTexture);
+			if(GIFTIZ_ENABLED) {
+				ITexture giftizLogoTexture = new BitmapTexture(this.getTextureManager(), new IInputStreamOpener() {@Override public InputStream open() throws IOException { return getAssets().open("gfx/giftiz_logo.png");} });
+				giftizLogoTexture.load();
+				this.mGiftizLogoTextureRegion = TextureRegionFactory.extractFromTexture(giftizLogoTexture);
+				
+				ITexture giftizLogoBadgeTexture = new BitmapTexture(this.getTextureManager(), new IInputStreamOpener() {@Override public InputStream open() throws IOException { return getAssets().open("gfx/giftiz_logo_badge.png");} });
+				giftizLogoBadgeTexture.load();
+				this.mGiftizLogoBadgeTextureRegion = TextureRegionFactory.extractFromTexture(giftizLogoBadgeTexture);
+				
+				ITexture giftizLogoWarningTexture = new BitmapTexture(this.getTextureManager(), new IInputStreamOpener() {@Override public InputStream open() throws IOException { return getAssets().open("gfx/giftiz_logo_warning.png");} });
+				giftizLogoWarningTexture.load();
+				this.mGiftizLogoWarningTextureRegion = TextureRegionFactory.extractFromTexture(giftizLogoWarningTexture);
+				
+				ITexture giftizNullTexture = new BitmapTexture(this.getTextureManager(), new IInputStreamOpener() {@Override public InputStream open() throws IOException { return getAssets().open("gfx/giftiz_null.png");} });
+				giftizNullTexture.load();
+				this.mGiftizNullTextureRegion = TextureRegionFactory.extractFromTexture(giftizNullTexture);
+			}
 			
-			ITexture giftizLogoBadgeTexture = new BitmapTexture(this.getTextureManager(), new IInputStreamOpener() {@Override public InputStream open() throws IOException { return getAssets().open("gfx/giftiz_logo_badge.png");} });
-			giftizLogoBadgeTexture.load();
-			this.mGiftizLogoBadgeTextureRegion = TextureRegionFactory.extractFromTexture(giftizLogoBadgeTexture);
 			
-			ITexture giftizLogoWarningTexture = new BitmapTexture(this.getTextureManager(), new IInputStreamOpener() {@Override public InputStream open() throws IOException { return getAssets().open("gfx/giftiz_logo_warning.png");} });
-			giftizLogoWarningTexture.load();
-			this.mGiftizLogoWarningTextureRegion = TextureRegionFactory.extractFromTexture(giftizLogoWarningTexture);
-			
-			ITexture giftizNullTexture = new BitmapTexture(this.getTextureManager(), new IInputStreamOpener() {@Override public InputStream open() throws IOException { return getAssets().open("gfx/giftiz_null.png");} });
-			giftizNullTexture.load();
-			this.mGiftizNullTextureRegion = TextureRegionFactory.extractFromTexture(giftizNullTexture);
-			
-			
-			
-			FontFactory.setAssetBasePath("font/");
-			final ITexture fontTexture = new BitmapTextureAtlas(this.getTextureManager(), 256, 256, TextureOptions.BILINEAR);
-			final ITexture sfontTexture = new BitmapTextureAtlas(this.getTextureManager(), 256, 256, TextureOptions.BILINEAR);
-			this.mSmallFont = FontFactory.createFromAsset(this.getFontManager(), fontTexture, this.getAssets(), "police.ttf", 28f, true, Color.WHITE);
-			this.mFont = FontFactory.createFromAsset(this.getFontManager(), sfontTexture, this.getAssets(), "police.ttf", 53f, true, Color.WHITE);
-			this.mFont.load();
-			this.mSmallFont.load();
+			font = new FontManager(this);
+
+			font.load(60);
+			font.load(28);
+			font.load(26);
+			font.load(53);
 		}catch (IOException e) {
 			Debug.e(e);
 		}
@@ -126,8 +149,19 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 		
 		final SharedPreferences settings = getSharedPreferences(MenuActivity.PREFS_NAME, 0);
         final int maxLevel = settings.getInt("maxLevel", 1);
-        
-        howto = new Text((float) (SCREENWIDTH*0.3), (float) (SCREENHEIGHT * 0.33), this.mFont, "TUTORIAL", this.getVertexBufferObjectManager()){
+        mInternetUsage = settings.getInt("internetUsage", OptionsActivity.IU_WIFI_ONLY);
+        modtText = new Text(MenuActivity.SCREENWIDTH, 45, font.get(26), String.format("%500s", ""), this.getVertexBufferObjectManager());
+        scene.attachChild(modtText); //AsyncGetModt
+        updateModt=false;
+		asyncTaskHandler = new Handler(Looper.getMainLooper());
+		asyncTaskHandler.post(new Runnable() {
+			@Override
+			public void run() {
+		    	new AsyncGetModt().execute((Void)null);
+			}
+	    });
+
+        howto = new Text((float) (SCREENWIDTH*0.3), (float) (SCREENHEIGHT * 0.44), font.get(53), getResources().getString(R.string.btn_tuto), this.getVertexBufferObjectManager()){
 			@Override
 		    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
 				if ((pSceneTouchEvent.isActionDown())||(pSceneTouchEvent.isActionMove()))
@@ -151,7 +185,7 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 		scene.registerTouchArea(howto);
         
         
-		play = new Text((float) (SCREENWIDTH*0.3), (float) (SCREENHEIGHT * 0.44), this.mFont, "PLAY", this.getVertexBufferObjectManager()) {
+		play = new Text((float) (SCREENWIDTH*0.3), (float) (SCREENHEIGHT * 0.3), font.get(60, Color.WHITE), getResources().getString(R.string.btn_startgame), this.getVertexBufferObjectManager()) {
 		    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
 				if ((pSceneTouchEvent.isActionDown())||(pSceneTouchEvent.isActionMove()))
 		        	this.setColor(1f,1f,0f);
@@ -168,7 +202,7 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 								final AlertDialog.Builder alert = new AlertDialog.Builder(MenuActivity.this);
 								
 			                    alert.setTitle("");
-			                    alert.setMessage("Choose level");
+			                    alert.setMessage(getResources().getString(R.string.choose_level_dialog));
 	
 			                    final LinearLayout layout = new LinearLayout(MenuActivity.this);
 			                    
@@ -181,7 +215,8 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 			                    final SeekBar seekbar = new SeekBar(MenuActivity.this);
 			                    
 			                    seekbar.setMax(maxLevel-1);
-			                    seekbar.setPadding(20, 20, 20, 20);
+			                    seekbar.setPadding(50, 20, 50, 20);
+			                    
 			                    seekbar.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
 									@Override
 									public void onProgressChanged(SeekBar arg0,int arg1, boolean arg2) {
@@ -195,12 +230,12 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 									@Override
 									public void onStopTrackingTouch(SeekBar arg0) {;}
 			                    });
-			                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT);
+			                    LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT);
 			                    layout.setLayoutParams(params);
-			                    LinearLayout.LayoutParams paramsSeek = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT);
+			                    LinearLayout.LayoutParams paramsSeek = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT);
 			                    paramsSeek.weight=1;
 			                    layout.addView(seekbar,paramsSeek);
-			                    LinearLayout.LayoutParams paramsLabel = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.FILL_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT);
+			                    LinearLayout.LayoutParams paramsLabel = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,LinearLayout.LayoutParams.WRAP_CONTENT);
 			                    paramsLabel.weight=9;
 			                    paramsLabel.setMargins(0, 40, 0, 0);
 			                    layout.addView(label,paramsLabel);
@@ -208,7 +243,7 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 			                    alert.setView(layout);
 	
 	
-			                    alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+			                    alert.setPositiveButton(getResources().getString(R.string.alert_dialog_ok), new DialogInterface.OnClickListener() {
 		                            @Override
 		                            public void onClick(DialogInterface dialog, int whichButton) {
 		                            	Intent intent = new Intent(MenuActivity.this, GameActivity.class);
@@ -222,7 +257,7 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 		                            }
 			                    });
 	
-			                    alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+			                    alert.setNegativeButton(getResources().getString(R.string.alert_dialog_cancel), new DialogInterface.OnClickListener() {
 		                            @Override
 		                            public void onClick(DialogInterface dialog, int whichButton) {
 		                            }
@@ -249,7 +284,7 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 		
 		play.setX((float) (0.5*SCREENWIDTH - play.getWidth()/2.0));
 		
-		options = new Text((float) (SCREENWIDTH*0.3), (float) (SCREENHEIGHT * 0.55), this.mFont, "SETTINGS", this.getVertexBufferObjectManager()){
+		options = new Text((float) (SCREENWIDTH*0.3), (float) (SCREENHEIGHT * 0.58), font.get(53), getResources().getString(R.string.btn_settings), this.getVertexBufferObjectManager()){
 			@Override
 		    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
 				if ((pSceneTouchEvent.isActionDown())||(pSceneTouchEvent.isActionMove()))
@@ -269,7 +304,7 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 		};
 		options.setX((float) (0.5*SCREENWIDTH - options.getWidth()/2.0));
 		
-		quit = new Text((float) (SCREENWIDTH*0.3), (float) (SCREENHEIGHT * 0.7), this.mFont, "QUIT", this.getVertexBufferObjectManager()){
+		quit = new Text((float) (SCREENWIDTH*0.3), (float) (SCREENHEIGHT * 0.7), font.get(53), getResources().getString(R.string.btn_quit), this.getVertexBufferObjectManager()){
 			@Override
 		    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
 				if ((pSceneTouchEvent.isActionDown())||(pSceneTouchEvent.isActionMove()))
@@ -284,9 +319,9 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 		        return true;
 		    }
 		};
-		quit.setX((float) (0.5*SCREENWIDTH - options.getWidth()/2.0));
+		quit.setX((float) (SCREENWIDTH/2f - quit.getWidth()/2f - 70));
 		
-		credit = new Text((float) (SCREENWIDTH*0.05), (float) (SCREENHEIGHT * 0.85), this.mSmallFont, "By Lortexgames - CREDITS", this.getVertexBufferObjectManager()) {
+		credit = new Text(0, (float) (SCREENHEIGHT * 0.85), font.get(28), getResources().getString(R.string.btn_credit), this.getVertexBufferObjectManager()) {
 			@Override
 		    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
 				if ((pSceneTouchEvent.isActionDown())||(pSceneTouchEvent.isActionMove()))
@@ -305,11 +340,12 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 		        return true;
 		    }
 		}; 
+		credit.setX(SCREENWIDTH/2f-credit.getWidth()/2f);
 		
-		Text pacVer = new Text(0, (float) (SCREENHEIGHT * 0.925), this.mSmallFont, "Bêta 0.6.1", this.getVertexBufferObjectManager());
+		Text pacVer = new Text(0, (float) (SCREENHEIGHT * 0.925),font.get(28), getResources().getString(R.string.btn_version), this.getVertexBufferObjectManager());
 		pacVer.setX(SCREENWIDTH - pacVer.getWidth() - 10);
 		
-		feedbackText = new Text((float) (SCREENWIDTH*0.05), (float) (SCREENHEIGHT * 0.925), this.mSmallFont, "Feedback", this.getVertexBufferObjectManager()) {
+		feedbackText = new Text((float) (SCREENWIDTH*0.05), (float) (SCREENHEIGHT * 0.925), font.get(28), getResources().getString(R.string.btn_feedback), this.getVertexBufferObjectManager()) {
 			@Override
 		    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
 				if ((pSceneTouchEvent.isActionDown())||(pSceneTouchEvent.isActionMove()))
@@ -332,41 +368,43 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 		    }
 		};
 
-		GiftizSDK.Inner.setButtonNeedsUpdateDelegate(this);
-		TextureRegion giftizSelectedTexture=giftizTextureRegion();		
-		
-		
-
-		buttonClicked=false;
-		
-		giftizButton = new Sprite(0,0,giftizSelectedTexture,this.getVertexBufferObjectManager()) {
-			@Override
-		    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
-				if ((pSceneTouchEvent.isActionDown())||(pSceneTouchEvent.isActionMove())) {
-					if(buttonClicked != true) {
-						giftizButton.setY(giftizButton.getY()-3);
-						giftizButton.setX(giftizButton.getX()-3);
-						buttonClicked = true;
+		if(GIFTIZ_ENABLED) {
+			GiftizSDK.Inner.setButtonNeedsUpdateDelegate(this);
+			TextureRegion giftizSelectedTexture=giftizTextureRegion();		
+			
+			buttonClicked=false;
+			
+			giftizButton = new Sprite(0,0,giftizSelectedTexture,this.getVertexBufferObjectManager()) {
+				@Override
+			    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
+					if ((pSceneTouchEvent.isActionDown())||(pSceneTouchEvent.isActionMove())) {
+						if(buttonClicked != true) {
+							giftizButton.setY(giftizButton.getY()-3);
+							giftizButton.setX(giftizButton.getX()-3);
+							buttonClicked = true;
+						}
 					}
-				}
-		        else if(pSceneTouchEvent.isActionUp()) {
-		        	if(hapticFeedback) {
-			        	Vibrator v = (Vibrator) MenuActivity.this.getApplicationContext().getSystemService(Service.VIBRATOR_SERVICE);
-			        	v.vibrate(100);
-		        	}
-		        	GiftizSDK.Inner.buttonClicked(MenuActivity.this);
-		        	this.setColor(1f,1f,1f);
-					giftizButton.setY(giftizButton.getY()+3);
-					giftizButton.setX(giftizButton.getX()+3);
-					buttonClicked = false;
-		        }
-		        return true;
-		    }
-		};
-		giftizButton.setScale(1.5f);
-		giftizButton.setY(quit.getY()-10);
-		giftizButton.setX(options.getX()+options.getWidth()-giftizButton.getWidth());
-		
+			        else if(pSceneTouchEvent.isActionUp()) {
+			        	if(hapticFeedback) {
+				        	Vibrator v = (Vibrator) MenuActivity.this.getApplicationContext().getSystemService(Service.VIBRATOR_SERVICE);
+				        	v.vibrate(100);
+			        	}
+			        	GiftizSDK.Inner.buttonClicked(MenuActivity.this);
+			        	this.setColor(1f,1f,1f);
+						giftizButton.setY(giftizButton.getY()+3);
+						giftizButton.setX(giftizButton.getX()+3);
+						buttonClicked = false;
+			        }
+			        return true;
+			    }
+			};
+			giftizButton.setScale(1.5f);
+			giftizButton.setY(quit.getY()-10);
+			giftizButton.setX(quit.getX()+quit.getWidth()+100);
+			
+			scene.attachChild(giftizButton);
+			scene.registerTouchArea(giftizButton);
+		}
 		
 		scene.attachChild(play);
 		scene.attachChild(options);
@@ -374,16 +412,12 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 		scene.attachChild(credit);
 		scene.attachChild(pacVer);
 		scene.attachChild(feedbackText);
-		if(giftizButton != null)
-			scene.attachChild(giftizButton);
 
 		scene.registerTouchArea(play);
 		scene.registerTouchArea(options);
 		scene.registerTouchArea(quit);
 		scene.registerTouchArea(credit);
 		scene.registerTouchArea(feedbackText);
-		if(giftizButton != null)
-			scene.registerTouchArea(giftizButton);
 		
 		scene.setOnSceneTouchListener(new IOnSceneTouchListener() {
 			@Override
@@ -395,13 +429,31 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 				feedbackText.setColor(1f,1f,1f);
 				howto.setColor(1f,1f,1f);
 
-				if(buttonClicked != false) {
-					giftizButton.setY(giftizButton.getY()+3);
-					giftizButton.setX(giftizButton.getX()+3);
-					buttonClicked = false;
+				if(GIFTIZ_ENABLED) {
+					if(buttonClicked != false) {
+						giftizButton.setY(giftizButton.getY()+3);
+						giftizButton.setX(giftizButton.getX()+3);
+						buttonClicked = false;
+					}
 				}
 				return false;
 			}
+		});
+		
+		scene.registerUpdateHandler(new IUpdateHandler() {
+			@Override
+			public void onUpdate(float pSecondsElapsed) {
+				if(updateModt) {
+					if(modtText.getX() < - modtText.getWidth() - MenuActivity.SCREENWIDTH) {
+						modtText.setX(MenuActivity.SCREENWIDTH);
+					} else {
+						modtText.setX(modtText.getX()-2);
+					}
+				}
+			}
+
+			@Override
+			public void reset() {}
 		});
 		
 		return scene;
@@ -437,17 +489,60 @@ public class MenuActivity extends SimpleBaseGameActivity  implements ButtonNeeds
 	@Override
 	public void onPause() {
 		super.onPause();
-		GiftizSDK.onPauseMainActivity(this); 
+		if(GIFTIZ_ENABLED)
+			GiftizSDK.onPauseMainActivity(this); 
 	}
 	
 	@Override
 	public void onResume() {
 		super.onResume();
-		GiftizSDK.onResumeMainActivity(this); 
+		if(GIFTIZ_ENABLED)
+			GiftizSDK.onResumeMainActivity(this); 
 	}
 	
 	public void onBackPressed() {
 		finish();
+	}
+	
+	private class AsyncGetModt extends AsyncTask<Void, Void, Void> {
+		@Override
+		protected Void doInBackground(Void... params) {
+			
+			ConnectivityManager connManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+			NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+			NetworkInfo mMobile = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+
+			if(mInternetUsage==OptionsActivity.IU_NEVER) 
+				return null;
+			
+			if(mInternetUsage==OptionsActivity.IU_WIFI_ONLY)
+			    if (!mWifi.isConnected()) 
+			    	return null;
+			
+			if(!mMobile.isConnected() && !mWifi.isConnected()) 
+				return null;
+			
+			
+
+			HttpPost postMethod = new HttpPost("http://lortexgames.alwaysdata.net/modt.php");
+			List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
+			nameValuePairs.add(new BasicNameValuePair("locale", Locale.getDefault().getLanguage()));
+			try {
+				postMethod.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+				String response = client.execute(postMethod, responseHandler);
+				modtText.setText(response);
+				
+				if(postMethod.getEntity() != null ) {
+					postMethod.getEntity().consumeContent();
+			    }
+				updateModt=true;
+			} catch (ClientProtocolException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return null;
+		}
 	}
 
 }

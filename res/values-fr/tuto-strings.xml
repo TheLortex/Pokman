@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+       <string-array name="tuto_1">
+        <item >Pokman</item>
+        <item >Bougez le téléphone</item>
+        <item >pour le déplacer</item>
+    </string-array>
+     <string-array name="tuto_2">
+        <item >Points</item>
+        <item >Un objectif:</item>
+        <item >Tous les manger</item>
+    </string-array>
+     <string-array name="tuto_3">
+        <item >Monstres</item>
+        <item >Attention, ils peuvent</item>
+        <item >vous attraper</item>
+    </string-array>
+     <string-array name="tuto_4">
+        <item >Bonus</item>
+        <item >Grâce à eux, vous pouvez</item>
+        <item >manger les monstres.</item>
+    </string-array>
+     <string-array name="tuto_5">
+        <item >C\'est parti</item>
+        <item >Vous pouvez commencer à</item>
+        <item >jouer. Bonne chance !</item>
+    </string-array>
+    <string name="startgame">Jouer</string>
+    <string name="tuto_toast_ghost_eaten">Vous avez mangé le fantôme.\nIl redeviendra actif au bout d\'un certain temps.</string>
+    <string name="tuto_toast_pokman_eaten">Pokman est mort.</string>
+    <string name="tuto_toast_welldone">Bien joué !</string>
+</resources>

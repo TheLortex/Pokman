@@ -1,5 +1,8 @@
 package com.lortexgames.pokman;
 
+
+import com.lortexgames.pokman.addons.Paginator;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -13,7 +16,6 @@ import org.andengine.engine.options.EngineOptions;
 import org.andengine.engine.options.ScreenOrientation;
 import org.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
 import org.andengine.entity.primitive.Line;
-import org.andengine.entity.primitive.Paginator;
 import org.andengine.entity.scene.IOnSceneTouchListener;
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.scene.background.Background;
@@ -26,7 +28,6 @@ import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.texture.region.TextureRegionFactory;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.util.adt.io.in.IInputStreamOpener;
-import org.andengine.util.debug.Debug;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
@@ -51,15 +52,15 @@ import android.graphics.Color;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.media.SoundPool.OnLoadCompleteListener;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Vibrator;
 import android.provider.Settings;
-import android.provider.Settings.Secure;
 import android.provider.Settings.System;
-import android.telephony.TelephonyManager;
 import android.text.InputFilter;
 import android.util.Pair;
 import android.util.SparseArray;
@@ -113,10 +114,11 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 
 	private SharedPreferences settings;
 	
-	private String mUuid;
 	private String lastName;
 	
 	private Paginator pagination;
+	
+	private int mInternetUsage;
 
 
 	@Override
@@ -130,7 +132,7 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 		
 		SharedPreferences settings = getSharedPreferences(MenuActivity.PREFS_NAME, 0);
 		final float percentageGfx = settings.getInt("sfx", 100)/100f;
-		
+		mInternetUsage = settings.getInt("internetUsage", OptionsActivity.IU_WIFI_ONLY);
 		this.setVolumeControlStream(AudioManager.STREAM_MUSIC);
 		
 		AudioManager audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
@@ -206,21 +208,10 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 	protected Scene onCreateScene() {
 		mScene = new Scene();
 		mScene.setBackground(new Background(0f,0f,0f));
-		
-        mUuid = settings.getString("uuid", "");
-        
-        if(mUuid=="") {
-    	    asyncTaskHandler.post(new Runnable() {
-    			@Override
-    			public void run() {
-    		    	new AsyncGetUUID().execute((Void)null);
-    			}
-    	    });
-        }
-		
+
 		final boolean hapticFeedback = System.getInt(this.getContentResolver(), Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) != 0;
 		
-		String message = win ? "WIN" : "GAME OVER";
+		String message = win ? getResources().getString(R.string.end_win_title) : getResources().getString(R.string.end_lose_title);
 		Text titleText = new Text(0,70,font.get(60, Color.WHITE),message,this.getVertexBufferObjectManager());
 		titleText.setX(MenuActivity.SCREENWIDTH/2f - titleText.getWidth()/2f);
 		mScene.attachChild(titleText);
@@ -268,7 +259,7 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 
 		                    editText.setFilters(FilterArray);
 		                    
-		                    if(getText() != "Enter name")
+		                    if(getText() != getResources().getString(R.string.end_entername))
 			                    editText.setText(getText());
 		                    else 
 			                    editText.setText("");
@@ -279,7 +270,7 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 		                    
 		                    alert.setView(editText);
 
-		                    alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+		                    alert.setPositiveButton(getResources().getString(R.string.alert_dialog_ok), new DialogInterface.OnClickListener() {
 	                            @Override
 	                            public void onClick(DialogInterface dialog, int whichButton) {
 	                            	scoreList.put(modifying, new Pair<Integer,String>(score,editText.getText().toString()));
@@ -301,7 +292,7 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 	                            }
 		                    });
 
-		                    alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+		                    alert.setNegativeButton(getResources().getString(R.string.alert_dialog_cancel), new DialogInterface.OnClickListener() {
 	                            @Override
 	                            public void onClick(DialogInterface dialog, int whichButton) {
 	                            }
@@ -346,11 +337,10 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 		if(!isBetter)
 			activateInput(false);
 
-		enterName.setText(lastName==""?"Enter name":lastName);
-		
+		enterName.setText(lastName==""?getResources().getString(R.string.end_entername):lastName); 
 		// Buttons
 		
-		returnButton = new Text(0,MenuActivity.SCREENHEIGHT / 2f + 100,font.get(50, Color.WHITE),"TRY AGAIN",this.getVertexBufferObjectManager()) {
+		returnButton = new Text(0,MenuActivity.SCREENHEIGHT / 2f + 100,font.get(50, Color.WHITE),getResources().getString(R.string.end_tryagain),this.getVertexBufferObjectManager()) {
 			@Override
 		    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
 				if ((pSceneTouchEvent.isActionDown())||(pSceneTouchEvent.isActionMove()))
@@ -374,7 +364,7 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 		returnButton.setX(MenuActivity.SCREENWIDTH/2f - returnButton.getWidth()/2f);
 		mScene.attachChild(returnButton);
 		
-		menuButton = new Text(0,MenuActivity.SCREENHEIGHT / 2f + returnButton.getHeight() + 200,font.get(50, Color.WHITE),"MENU",this.getVertexBufferObjectManager()) {
+		menuButton = new Text(0,MenuActivity.SCREENHEIGHT / 2f + returnButton.getHeight() + 200,font.get(50, Color.WHITE),getResources().getString(R.string.end_menu),this.getVertexBufferObjectManager()) {
 			@Override
 		    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
 				if ((pSceneTouchEvent.isActionDown())||(pSceneTouchEvent.isActionMove()))
@@ -402,11 +392,11 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 		
 		// Scene HIGH SCORE local
 		
-		Text highText = new Text(0,70,font.get(60, Color.WHITE),"HIGH SCORE",this.getVertexBufferObjectManager());
+		Text highText = new Text(0,70,font.get(60, Color.WHITE),getResources().getString(R.string.end_highscore),this.getVertexBufferObjectManager());
 		highText.setX(MenuActivity.SCREENWIDTH + (MenuActivity.SCREENWIDTH/2f - highText.getWidth()/2f));
 		mScene.attachChild(highText);
 
-		Text highLocalText = new Text(0,150,font.get(48, Color.WHITE),"LOCAL",this.getVertexBufferObjectManager());
+		Text highLocalText = new Text(0,150,font.get(48, Color.WHITE),getResources().getString(R.string.end_local),this.getVertexBufferObjectManager());
 		highLocalText.setX(MenuActivity.SCREENWIDTH + (MenuActivity.SCREENWIDTH/2f - highLocalText.getWidth()/2f));
 		mScene.attachChild(highLocalText);
 
@@ -468,11 +458,11 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 		
 		// Scene high score global
 		
-		Text globalHighText = new Text(0,70,font.get(60, Color.WHITE),"HIGH SCORE",this.getVertexBufferObjectManager());
+		Text globalHighText = new Text(0,70,font.get(60, Color.WHITE),getResources().getString(R.string.end_highscore),this.getVertexBufferObjectManager());
 		globalHighText.setX(-MenuActivity.SCREENWIDTH + (MenuActivity.SCREENWIDTH/2f - globalHighText.getWidth()/2f));
 		mScene.attachChild(globalHighText);
 
-		Text globalHighTextSub = new Text(0,150,font.get(48, Color.WHITE),"GLOBAL",this.getVertexBufferObjectManager());
+		Text globalHighTextSub = new Text(0,150,font.get(48, Color.WHITE),getResources().getString(R.string.end_global),this.getVertexBufferObjectManager());
 		globalHighTextSub.setX(-MenuActivity.SCREENWIDTH + (MenuActivity.SCREENWIDTH/2f - globalHighTextSub.getWidth()/2f));
 		mScene.attachChild(globalHighTextSub);
 		
@@ -544,7 +534,7 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 		this.runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				for(int i=0;i<5;i++) {
+				for(int i=0;i<((onlineScoreList.size()>5) ? 5 : onlineScoreList.size()) ;i++) {
 					int curScore = onlineScoreList.get(i).first;
 					String curName = onlineScoreList.get(i).second;
 					String curScoreText = String.valueOf(curScore);
@@ -594,20 +584,42 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 	private class AsyncScoreSubmit extends AsyncTask<Void, Void, Void> {
 		@Override
 		protected Void doInBackground(Void... params) {
+			
+			ConnectivityManager connManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);
+			NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+			NetworkInfo mMobile = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+
+			if(mInternetUsage==OptionsActivity.IU_NEVER) {
+				onlineScoreList.put(0,new Pair<Integer,String>((Integer)0, getResources().getString(R.string.end_err_notenabled))); 
+	            EndGameActivity.this.drawElements();
+				return null;
+			} else if(mInternetUsage==OptionsActivity.IU_WIFI_ONLY) {
+			    if (!mWifi.isConnected()) {
+			    	onlineScoreList.put(0,new Pair<Integer,String>((Integer)0, getResources().getString(R.string.end_err_nowifi))); 
+		            EndGameActivity.this.drawElements();
+					return null;
+			    }
+			}
+			
+			if(!mMobile.isConnected() && !mWifi.isConnected()) {
+				onlineScoreList.put(0,new Pair<Integer,String>((Integer)0, getResources().getString(R.string.end_err_nonetwork))); 
+	            EndGameActivity.this.drawElements();
+				return null;
+			}
+			
 			if(scoreUpload) { // Upload the score
-				if(mUuid!="") {
 					try {
 					HttpPost postMethod = new HttpPost("http://lortexgames.alwaysdata.net/submit.php");
 					List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
 					nameValuePairs.add(new BasicNameValuePair("name", onlineScoreList.get(onlineModifying).second));
 					nameValuePairs.add(new BasicNameValuePair("score", String.valueOf(onlineScoreList.get(onlineModifying).first)));
 					nameValuePairs.add(new BasicNameValuePair("level", String.valueOf(level)));
-					nameValuePairs.add(new BasicNameValuePair("uuid", mUuid));
+
 					String keywords = "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz";
 					
 					MessageDigest md;
 					md = MessageDigest.getInstance("SHA-256");
-			        md.update((String.valueOf(onlineScoreList.get(onlineModifying).first) + "hello" + String.valueOf(level) + "what are your doing ?" + mUuid + keywords.charAt(19) + keywords.charAt(17) + keywords.charAt(14) + keywords.charAt(11) + keywords.charAt(11) + keywords.charAt(5) + keywords.charAt(0) + keywords.charAt(2) + keywords.charAt(4)).getBytes());
+			        md.update((String.valueOf(onlineScoreList.get(onlineModifying).first) + "hello" + String.valueOf(level) + "what are your doing ?" + keywords.charAt(19) + keywords.charAt(17) + keywords.charAt(14) + keywords.charAt(11) + keywords.charAt(11) + keywords.charAt(5) + keywords.charAt(0) + keywords.charAt(2) + keywords.charAt(4)).getBytes());
 					
 			        
 			        byte byteData[] = md.digest();
@@ -626,8 +638,7 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 					nameValuePairs.add(new BasicNameValuePair("hash", hash));
 					
 					postMethod.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-					String rep = client.execute(postMethod,responseHandler); 
-					Debug.i(rep);
+					client.execute(postMethod,responseHandler); 
 					
 					if(postMethod.getEntity() != null ) {
 						postMethod.getEntity().consumeContent();
@@ -641,7 +652,6 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 						e.printStackTrace();
 					} catch (NoSuchAlgorithmException e1) {
 						e1.printStackTrace();
-				}
 				}
 			} else { //Download the scoreboard
 				HttpPost postMethod = new HttpPost("http://lortexgames.alwaysdata.net/get.php");
@@ -666,7 +676,7 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 							}
 							onlineModifying = i;
 							onlineBetter=true;
-							onlineScoreList.put(i, new Pair<Integer,String>(score,"Unknown"));
+							onlineScoreList.put(i, new Pair<Integer,String>(score,lastName==""?"Unknown":lastName));
 						}
 					} 
 					
@@ -686,41 +696,4 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 			return null;
 		}
 	}
-	
-	private class AsyncGetUUID extends AsyncTask<Void, Void, Void> { // Generate UUID for app
-		@Override
-		protected Void doInBackground(Void... params) {
-			HttpPost postMethod = new HttpPost("http://lortexgames.alwaysdata.net/uuid.php");
-			List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>();
-			
-			final String androidId = Secure.getString(EndGameActivity.this.getContentResolver(), Secure.ANDROID_ID);
-			TelephonyManager mTelephonyMgr = (TelephonyManager)EndGameActivity.this.getSystemService(TELEPHONY_SERVICE);
-			String simSerial = mTelephonyMgr.getSimSerialNumber();
-			nameValuePairs.add(new BasicNameValuePair("android_id", androidId));
-			nameValuePairs.add(new BasicNameValuePair("sim_id", simSerial));
-			
-			try {
-				postMethod.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-				String rep = client.execute(postMethod,responseHandler); 
-				String newUuid = rep;
-				Editor edit = settings.edit();
-				edit.putString("uuid", newUuid);
-				edit.commit();
-				mUuid = newUuid;
-				
-				if(postMethod.getEntity() != null ) {
-					postMethod.getEntity().consumeContent();
-			     }
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
-			} catch (ClientProtocolException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return null;
-		} 
-	}
-
-
 }
