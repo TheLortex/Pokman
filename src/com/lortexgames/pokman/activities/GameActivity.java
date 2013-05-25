@@ -483,7 +483,7 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		
 		int nbGhosts = 0;
 		
-		SpriteBatch sprWall = new SpriteBatch(tileMapper.getTextureAtlas(),mazeGen.getCountWalls(),this.getVertexBufferObjectManager());
+		SpriteBatch sprWall = new SpriteBatch(tileMapper.getTexture(),mazeGen.getCountWalls(),this.getVertexBufferObjectManager());
 		sprPoints = new SpriteGroup(mPointTextureRegion.getTexture(), 1000, this.getVertexBufferObjectManager());
 
 		mCamera.setHUD(setupHUD());

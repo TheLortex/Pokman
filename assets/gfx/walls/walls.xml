@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<texture version="1" file="walls.png" type="bitmap" width="689" height="48" pixelformat="RGBA_8888" minfilter="linear" magfilter="linear" wrapt="clamp" wraps="clamp" premultiplyalpha="false">
+    <!-- Created with TexturePacker http://www.codeandweb.com/texturepacker -->
+    <!-- $TexturePacker:SmartUpdate:8cca28300e3bfb4e814f67316975f84d$ -->
+    <textureregion id="0" src="wall-b.png" x="480" y="3" width="34" height="38" rotated="false" trimmed="false" srcx="0" srcy="0" srcwidth="34" srcheight="38"/>
+    <textureregion id="1" src="wall-bd.png" x="398" y="3" width="38" height="38" rotated="false" trimmed="false" srcx="0" srcy="0" srcwidth="38" srcheight="38"/>
+    <textureregion id="2" src="wall-bg.png" x="355" y="3" width="38" height="38" rotated="false" trimmed="false" srcx="0" srcy="0" srcwidth="38" srcheight="38"/>
+    <textureregion id="3" src="wall-bgd.png" x="222" y="3" width="42" height="38" rotated="false" trimmed="false" srcx="0" srcy="0" srcwidth="42" srcheight="38"/>
+    <textureregion id="4" src="wall-d.png" x="609" y="3" width="38" height="34" rotated="false" trimmed="false" srcx="0" srcy="0" srcwidth="38" srcheight="34"/>
+    <textureregion id="5" src="wall-dg.png" x="519" y="3" width="42" height="34" rotated="false" trimmed="false" srcx="0" srcy="0" srcwidth="42" srcheight="34"/>
+    <textureregion id="6" src="wall-g.png" x="566" y="3" width="38" height="34" rotated="false" trimmed="false" srcx="0" srcy="0" srcwidth="38" srcheight="34"/>
+    <textureregion id="7" src="wall-h.png" x="441" y="3" width="34" height="38" rotated="false" trimmed="false" srcx="0" srcy="0" srcwidth="34" srcheight="38"/>
+    <textureregion id="8" src="wall-hb.png" x="136" y="3" width="34" height="42" rotated="false" trimmed="false" srcx="0" srcy="0" srcwidth="34" srcheight="42"/>
+    <textureregion id="9" src="wall-hbd.png" x="93" y="3" width="38" height="42" rotated="false" trimmed="false" srcx="0" srcy="0" srcwidth="38" srcheight="42"/>
+    <textureregion id="10" src="wall-hbdg.png" x="3" y="3" width="42" height="42" rotated="false" trimmed="false" srcx="0" srcy="0" srcwidth="42" srcheight="42"/>
+    <textureregion id="11" src="wall-hbg.png" x="50" y="3" width="38" height="42" rotated="false" trimmed="false" srcx="0" srcy="0" srcwidth="38" srcheight="42"/>
+    <textureregion id="12" src="wall-hd.png" x="312" y="3" width="38" height="38" rotated="false" trimmed="false" srcx="0" srcy="0" srcwidth="38" srcheight="38"/>
+    <textureregion id="13" src="wall-hg.png" x="269" y="3" width="38" height="38" rotated="false" trimmed="false" srcx="0" srcy="0" srcwidth="38" srcheight="38"/>
+    <textureregion id="14" src="wall-hgd.png" x="175" y="3" width="42" height="38" rotated="false" trimmed="false" srcx="0" srcy="0" srcwidth="42" srcheight="38"/>
+    <textureregion id="15" src="wall-rdpt.png" x="652" y="3" width="34" height="34" rotated="false" trimmed="false" srcx="0" srcy="0" srcwidth="34" srcheight="34"/>
+</texture>

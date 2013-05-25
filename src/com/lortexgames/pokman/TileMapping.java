@@ -4,16 +4,23 @@ import java.io.IOException;
 
 import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.Sprite;
+import org.andengine.extension.texturepacker.opengl.texture.util.texturepacker.TexturePack;
+import org.andengine.extension.texturepacker.opengl.texture.util.texturepacker.TexturePackLoader;
+import org.andengine.extension.texturepacker.opengl.texture.util.texturepacker.TexturePackTextureRegionLibrary;
+import org.andengine.extension.texturepacker.opengl.texture.util.texturepacker.exception.TexturePackParseException;
+import org.andengine.opengl.texture.ITexture;
+import org.andengine.opengl.texture.Texture;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
+import org.andengine.util.debug.Debug;
 
-public class TileMapping {
-	
-	private BitmapTextureAtlas mBitmapTextureAtlas;
+public class TileMapping implements walls{
+	private TexturePackTextureRegionLibrary texturePackLibrary;
+	private TexturePack texturePack;
 	
 	private TextureRegion mWallRDPT,mWallHB,mWallDG,mWallHD,mWallBD,mWallBG,mWallHG,mWallHBD,mWallBGD,mWallHBG,mWallHGD,mWallHBGD;
 	private TextureRegion mWallH;
@@ -26,6 +33,7 @@ public class TileMapping {
 	private int margWallY;
 
 	private SimpleBaseGameActivity mParent;
+	private BitmapTextureAtlas mBitmapTextureAtlas;
 	
 	public TileMapping(MazeGenerator maze,SimpleBaseGameActivity parent) {
 		mParent = parent;
@@ -33,6 +41,35 @@ public class TileMapping {
 	}
 
 	public void loadTextures() throws IOException {
+		
+		try 
+	    {
+	        texturePack = new TexturePackLoader(mParent.getTextureManager(), "gfx/walls/").loadFromAsset(mParent.getAssets(), "walls.xml");
+	        texturePack.loadTexture();
+	        texturePackLibrary = texturePack.getTexturePackTextureRegionLibrary();
+	    } 
+	    catch (final TexturePackParseException e) 
+	    {
+	        Debug.e(e);
+	    }
+
+		this.mWallRDPT = texturePackLibrary.get(WALL_RDPT_ID);
+		this.mWallHB = texturePackLibrary.get(WALL_HB_ID);
+		this.mWallDG = texturePackLibrary.get(WALL_DG_ID);
+		this.mWallHD = texturePackLibrary.get(WALL_HD_ID);
+		this.mWallBD = texturePackLibrary.get(WALL_BD_ID);
+		this.mWallBG = texturePackLibrary.get(WALL_BG_ID);
+		this.mWallHG = texturePackLibrary.get(WALL_HG_ID);
+		this.mWallHBD = texturePackLibrary.get(WALL_HBD_ID);
+		this.mWallHBG = texturePackLibrary.get(WALL_HBG_ID);
+		this.mWallHGD = texturePackLibrary.get(WALL_HGD_ID);
+		this.mWallBGD = texturePackLibrary.get(WALL_BGD_ID);
+		this.mWallHBGD = texturePackLibrary.get(WALL_HBDG_ID);
+		this.mWallH = texturePackLibrary.get(WALL_H_ID);
+		this.mWallB = texturePackLibrary.get(WALL_B_ID);
+		this.mWallD = texturePackLibrary.get(WALL_D_ID);
+		this.mWallG = texturePackLibrary.get(WALL_G_ID);
+		/*
 		this.mBitmapTextureAtlas = new BitmapTextureAtlas(mParent.getTextureManager(), 256, 256, TextureOptions.NEAREST_PREMULTIPLYALPHA);
 		//mBitmapTextureAtlas.
 		BitmapTextureAtlasTextureRegionFactory.setAssetBasePath("gfx/");
@@ -55,7 +92,7 @@ public class TileMapping {
 		this.mWallD = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, mParent.getApplicationContext(), "wall-d.png", 40, 120); 
 		this.mWallG = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas, mParent.getApplicationContext(), "wall-g.png", 80, 120); 
 		
-		mParent.getEngine().getTextureManager().loadTexture(mBitmapTextureAtlas);
+		mParent.getEngine().getTextureManager().loadTexture(mBitmapTextureAtlas);*/
 	}
 	
 	public Sprite getWallSprite(int posX, int posY,int gridX, int gridY,Scene scene) {
@@ -65,8 +102,9 @@ public class TileMapping {
 		return wall;
 	}
 	
-	public BitmapTextureAtlas getTextureAtlas() {
-		return mBitmapTextureAtlas;
+	public ITexture getTexture() {
+		return texturePack.getTexture();
+		//return mBitmapTextureAtlas;
 	}
 	
 	protected ITextureRegion selectTexture(int x,int y) {
@@ -139,7 +177,7 @@ public class TileMapping {
 	}
 
 	public void release() {
-		mBitmapTextureAtlas.clearTextureAtlasSources();
-		mBitmapTextureAtlas.unload();
+		/*mBitmapTextureAtlas.clearTextureAtlasSources();
+		mBitmapTextureAtlas.unload();*/
 	}
 }

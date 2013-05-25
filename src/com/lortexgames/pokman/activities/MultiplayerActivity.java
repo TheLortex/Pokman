@@ -588,7 +588,7 @@ public class MultiplayerActivity extends SimpleBaseGameActivity  implements Sens
 	
 
 	private void showMap(int nWalls) {
-		SpriteBatch sprWall = new SpriteBatch(tileMapper.getTextureAtlas(),nWalls,this.getVertexBufferObjectManager());
+		SpriteBatch sprWall = new SpriteBatch(tileMapper.getTexture(),nWalls,this.getVertexBufferObjectManager());
 		SpriteGroup sprPoints = new SpriteGroup(tex.get("point").getTexture(), 1000, this.getVertexBufferObjectManager());
 		
 		for(int y=0;y<N_ROW;y++) {
