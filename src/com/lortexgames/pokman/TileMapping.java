@@ -27,7 +27,7 @@ public class TileMapping {
 
 	private SimpleBaseGameActivity mParent;
 	
-	TileMapping(MazeGenerator maze,SimpleBaseGameActivity parent) {
+	public TileMapping(MazeGenerator maze,SimpleBaseGameActivity parent) {
 		mParent = parent;
 		map = maze;
 	}

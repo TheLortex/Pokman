@@ -5,7 +5,7 @@
     <string name="btn_settings">SETTINGS</string>
     <string name="btn_feedback">Feedback</string>
     <string name="btn_credit">By Lortexgames - CREDITS</string>
-    <string name="btn_version">Beta 0.6.2</string>
-    <string name="btn_quit">QUIT</string>
+    <string name="btn_version">Beta 0.6.2d</string>
+    <string name="btn_highscores">HIGH SCORES</string>
     <string name="choose_level_dialog">Choose level</string>
 </resources>

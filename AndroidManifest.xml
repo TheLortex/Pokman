@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.lortexgames.pokman"
-    android:versionCode="800"
-    android:versionName="bêta0.6.2"
+    android:versionCode="900"
+    android:versionName="beta0.7.0"
     android:installLocation="auto" >
 
     <uses-sdk
@@ -15,21 +15,25 @@
 	<uses-permission android:name="android.permission.VIBRATE" />
 	<uses-permission android:name="android.permission.READ_PHONE_STATE" />
 	<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-	<uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.INTERNET" />
 	<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/> 
+	<uses-permission android:name="android.permission.BLUETOOTH" />
+	<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 	
     <application
         android:allowBackup="true"
         android:icon="@drawable/ic_launcher"
         android:label="Pokman"
-        android:theme="@style/themeSelector" >
+        android:theme="@style/themeSelector" 
+        android:name=".AppInterface">
         
         <meta-data android:name="GIFTIZ_PARTNER_KEY" android:value="e30bc4a5-eb83-4400-84e6-ced713d05d2e"/>
         <meta-data android:name="SHOW_GIFTIZ_LOG" android:value="false" /> 
+        <meta-data android:name="com.google.android.gms.games.APP_ID" android:value="@string/app_id" />
 		<activity android:name="com.purplebrain.giftiz.sdk.GiftizWebViewActivity" />
         
         <activity
-            android:name="com.lortexgames.pokman.MenuActivity"
+            android:name="com.lortexgames.pokman.activities.MenuActivity"
             android:screenOrientation="portrait" 
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@style/themeSelector">
@@ -39,30 +43,50 @@
             </intent-filter>
         </activity>
         <activity 
-            android:name=".GameActivity"
+            android:name="com.lortexgames.pokman.activities.GameActivity"
             android:screenOrientation="portrait" 
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@style/themeSelector"></activity>
         <activity 
-            android:name=".TutorialActivity"
+            android:name="com.lortexgames.pokman.activities.TutorialActivity"
             android:screenOrientation="portrait" 
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@style/themeSelector"></activity>
         <activity 
-            android:name=".OptionsActivity"
+            android:name="com.lortexgames.pokman.activities.OptionsActivity"
             android:screenOrientation="portrait" 
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@style/themeSelector"></activity>
         <activity 
-            android:name=".EndGameActivity"
+            android:name="com.lortexgames.pokman.activities.EndGameActivity"
             android:screenOrientation="portrait" 
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@style/themeSelector"></activity>
         <activity 
-            android:name=".CreditActivity"
+            android:name="com.lortexgames.pokman.activities.CreditActivity"
             android:screenOrientation="portrait" 
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@style/themeSelector"></activity>
+        <activity 
+            android:name="com.lortexgames.pokman.activities.HighscoresActivity"
+            android:screenOrientation="portrait" 
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:theme="@style/themeSelector"></activity>
+        <activity 
+            android:name="com.lortexgames.pokman.activities.LobbyActivity2"
+            android:screenOrientation="portrait" 
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:theme="@style/themeSelector"></activity>
+        <activity 
+            android:name="com.lortexgames.pokman.activities.MultiplayerActivity"
+            android:screenOrientation="portrait" 
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:theme="@style/themeSelector"></activity>
+        <activity 
+            android:name="com.lortexgames.pokman.activities.StopBluetooth"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:theme="@android:style/Theme.Dialog"
+            android:excludeFromRecents="true" ></activity>
     </application>
 
 </manifest>

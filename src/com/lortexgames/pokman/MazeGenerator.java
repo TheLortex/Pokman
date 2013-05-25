@@ -1,6 +1,13 @@
 package  com.lortexgames.pokman;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
 import java.util.Vector;
+
+import android.util.Pair;
 
 
 
@@ -11,7 +18,7 @@ public class MazeGenerator {
 	
 	private int MAX_WALL_LENGHT=7;
 	
-	MazeGenerator(int width, int height,int level) {
+	public MazeGenerator(int width, int height,int level) {
 		this.mWidth = width;
 		this.mHeight = height;
 		
@@ -30,6 +37,43 @@ public class MazeGenerator {
 	
 	public void randomize() {
 		grid(); 
+		
+		ArrayList<Pair<Integer, Integer>> coordRand = new ArrayList<Pair<Integer, Integer>>();
+		
+		for(int i=1;i<this.mWidth;i+=2) {
+			for(int j=2;j<this.mHeight;j+=2) {
+				coordRand.add(new Pair<Integer, Integer>(i,j));
+				coordRand.add(new Pair<Integer, Integer>(i+1,j-1));
+			}
+		}
+		
+		Collections.shuffle(coordRand, new Random(System.nanoTime()));
+		Iterator<Pair<Integer, Integer>> it = coordRand.iterator();
+		while(it.hasNext()) {
+			Pair<Integer, Integer> coord = it.next();
+			int testX = coord.first;
+			int testY = coord.second;
+			
+			//if(value(testX, testY) != Element.MUR)
+
+			int num = (randok(0.5)) ? 3 : 3;
+			int num2 = (randok(0.5)) ? 3 : 3;
+			
+			if(testX%2 == 0) {
+				if((nbLinks(testX-1,testY)>=num)&&(nbLinks(testX+1,testY)>=num2)&&(wallLenght(testX,testY-1,testX,testY)+wallLenght(testX,testY+1,testX,testY)<MAX_WALL_LENGHT)) {
+	
+					nWalls++;
+					value(testX,testY,Element.MUR);
+				}
+			} else {
+				if((nbLinks(testX,testY-1)>=num)&&(nbLinks(testX,testY+1)>=num2)&&(wallLenght(testX-1,testY,testX,testY)+wallLenght(testX+1,testY,testX,testY)<MAX_WALL_LENGHT)) {
+					nWalls++;
+					value(testX,testY,Element.MUR);
+				}
+			}
+		}
+
+		/*
 		int timeout = 0;
 		
 		while(timeout < 1000) {
@@ -64,7 +108,7 @@ public class MazeGenerator {
 				}
 			}
 			
-		}
+		}*/
 	}
 	
 	private int wallLenght(int x,int y,int prevX, int prevY) {

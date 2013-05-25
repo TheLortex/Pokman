@@ -6,6 +6,7 @@ import org.andengine.opengl.texture.ITexture;
 import org.andengine.opengl.texture.TextureOptions;
 import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
+import org.andengine.util.debug.Debug;
 
 import android.graphics.Color;
 import android.util.SparseArray;
@@ -38,6 +39,11 @@ public class FontManager {
 	}
 	
 	public Font get(int size, int color) {
+		if(fonts.get(size).get(color)==null) {
+			Debug.e("Pokman::FontManager::preload "+size + ":" +  color + " to optimize please");
+			load(size,color);
+		} 
+
 		return fonts.get(size).get(color);
 	}
 	
