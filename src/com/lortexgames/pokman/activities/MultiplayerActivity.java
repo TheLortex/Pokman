@@ -222,7 +222,7 @@ public class MultiplayerActivity extends SimpleBaseGameActivity  implements Sens
 		mScene.registerUpdateHandler(mPhysicsWorld);
 		
 		mCamera.setHUD(setupHUD());
-		efh = new EntityFollowerHandler(this, mCamera);
+		efh = new EntityFollowerHandler(this, mCamera,HUD_HEIGHT);
 		if(mServer) {
 			int ghostIndex=1;
 			

@@ -487,7 +487,7 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		sprPoints = new SpriteGroup(mPointTextureRegion.getTexture(), 1000, this.getVertexBufferObjectManager());
 
 		mCamera.setHUD(setupHUD());
-		efh = new EntityFollowerHandler(this, mCamera);
+		efh = new EntityFollowerHandler(this, mCamera,HUD_HEIGHT);
 		
 		for(int y=0;y<nRow;y++) {
 			for(int x=0;x<nCol;x++) {

@@ -19,11 +19,13 @@ public class EntityFollowerHandler {
 	private SimpleBaseGameActivity 	mCtx;
 	private HashMap<Sprite,Sprite>  mFollowingSprites;
 	private boolean 				mPaused=false;
+	private int 					mHudHeight;
 	
-	public EntityFollowerHandler(SimpleBaseGameActivity ctx, ZoomCamera camera) {
+	public EntityFollowerHandler(SimpleBaseGameActivity ctx, ZoomCamera camera, int hudHeight) {
 		mCtx    	= ctx;
 		mCamera 	= camera;
 		mFollowingSprites = new HashMap<Sprite,Sprite>();
+		mHudHeight = hudHeight;
 	}
 	
 	public void addSprite(Sprite toFollow) {
@@ -54,7 +56,7 @@ public class EntityFollowerHandler {
 	
 	public synchronized void update() {
 		Iterator<Sprite> keys = mFollowingSprites.keySet().iterator();
-		Debug.e("Bite "+mFollowingSprites.size());
+
 		while(keys.hasNext()) {
 			Sprite curSprite     = keys.next();
 			final Sprite curSpriteIcon = mFollowingSprites.get(curSprite);
@@ -66,9 +68,9 @@ public class EntityFollowerHandler {
 				curSpriteIcon.setScale(mCamera.getZoomFactor());
 			
 			float sx=curSprite.getX(), sy=curSprite.getY();
-			float cxmin=mCamera.getXMin(), cymin=mCamera.getYMin()+90, cxmax=mCamera.getXMax(), cymax=mCamera.getYMax();
+			float cxmin=mCamera.getXMin(), cymin=mCamera.getYMin()+mHudHeight/2f, cxmax=mCamera.getXMax(), cymax=mCamera.getYMax();
 			
-			float sprH = curSprite.getHeight()/2f, sprW = curSprite.getWidth()/2f;
+			float sprH = curSprite.getHeight(), sprW = curSprite.getWidth();
 
 			if(((sx+sprW >= cxmin)&&(sy+sprH >= cymin)&&(sx <= cxmax)&&(sy <= cymax))||(mPaused)) {
 				if(curSpriteIcon.isVisible()) {
@@ -82,20 +84,19 @@ public class EntityFollowerHandler {
 			} else {
 				curSpriteIcon.setVisible(true);
 				final float posX, posY;
-				
-				if(sy < cymin)
-					posY = GameActivity.HUD_HEIGHT-sprH;
+				if(sy+sprH < cymin)
+					posY = mHudHeight;
 				else if(sy > cymax)
 					posY =MenuActivity.getHeight() - sprH;
 				else
-					posY = ((sy-cymin)/mCamera.getHeight())*MenuActivity.getHeight()+GameActivity.HUD_HEIGHT-sprH;
+					posY = ((sy-cymin)/mCamera.getHeight())*MenuActivity.getHeight()+mHudHeight;
 				
-				if(sx < cxmin)
-					posX = -sprW;
+				if(sx+sprW < cxmin)
+					posX = 0;
 				else if(sx > cxmax)
 					posX = MenuActivity.getWidth() - sprW;
 				else
-					posX = ((sx-cxmin)/mCamera.getWidth())*MenuActivity.getWidth()+sprW;
+					posX = ((sx-cxmin)/mCamera.getWidth())*MenuActivity.getWidth();
 				
 				mCtx.runOnUiThread(new Runnable() {
 					@Override
