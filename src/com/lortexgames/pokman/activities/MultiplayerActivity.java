@@ -50,6 +50,7 @@ import com.lortexgames.pokman.TileMapping;
 import com.lortexgames.pokman.addons.MaxStepPhysicsWorld;
 import com.lortexgames.pokman.handlers.BluetoothConnectedThread;
 import com.lortexgames.pokman.handlers.BluetoothReceiverInterface;
+import com.lortexgames.pokman.handlers.EntityFollowerHandler;
 import com.lortexgames.pokman.handlers.PlayerHandler;
 import com.lortexgames.pokman.handlers.TextureHandler;
 
@@ -123,6 +124,8 @@ public class MultiplayerActivity extends SimpleBaseGameActivity  implements Sens
 	private float mPinchZoomStartedCameraZoomFactor;
 	private boolean receivingMap;
 	
+	private EntityFollowerHandler efh;
+	
 	@Override
 	public EngineOptions onCreateEngineOptions() {
 		mCamera = new ZoomCamera(0, 0, MenuActivity.getWidth(), MenuActivity.getHeight());
@@ -159,20 +162,7 @@ public class MultiplayerActivity extends SimpleBaseGameActivity  implements Sens
 		
 		AppInterface app = (AppInterface)this.getApplication();
 
-		
-		/*int gameH, gameL;
-		gameH = MenuActivity.getHeight();
-		gameL =  MenuActivity.getWidth();*/
-
-		/*N_ROW = (int) Math.floor(gameH/ ((double) TILE_SIZE));
-		N_ROW = N_ROW%2==0 ? N_ROW - 1 : N_ROW;
-		N_COL = (int) Math.floor(gameL  / ((double) TILE_SIZE));
-		N_COL = N_COL%2==0 ? N_COL - 1 : N_COL;*/
-		
-		//mCamera.setBounds(-(N_COL/2f)*TILE_SIZE, -(N_ROW/2f)*TILE_SIZE, (N_COL/2f)*TILE_SIZE, (N_ROW/2f)*TILE_SIZE);
-		//mCamera.setBounds(-(N_COL/2f)*TILE_SIZE, -(N_ROW/2f)*TILE_SIZE, (N_COL)*TILE_SIZE, (N_ROW)*TILE_SIZE);
 		mCamera.setBounds(0, -HUD_HEIGHT, N_COL*TILE_SIZE, N_ROW*TILE_SIZE);
-
 		mCamera.setBoundsEnabled(true);
 		
 		marginLeft = 0;
@@ -232,7 +222,7 @@ public class MultiplayerActivity extends SimpleBaseGameActivity  implements Sens
 		mScene.registerUpdateHandler(mPhysicsWorld);
 		
 		mCamera.setHUD(setupHUD());
-		
+		efh = new EntityFollowerHandler(this, mCamera);
 		if(mServer) {
 			int ghostIndex=1;
 			
@@ -246,6 +236,8 @@ public class MultiplayerActivity extends SimpleBaseGameActivity  implements Sens
 				
 				ply.addPokman(pokguy);
 				curPoksprite.setZIndex(50);
+				
+				efh.addSprite(curPoksprite);
 
 				mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(curPoksprite, pokguy));
 				mScene.attachChild(curPoksprite);
@@ -263,6 +255,8 @@ public class MultiplayerActivity extends SimpleBaseGameActivity  implements Sens
 
 
 				curGhostsprite.setZIndex(50);
+				efh.addSprite(curGhostsprite);
+				
 				mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(curGhostsprite, aGhost));
 				mScene.attachChild(curGhostsprite);
 				
@@ -278,6 +272,8 @@ public class MultiplayerActivity extends SimpleBaseGameActivity  implements Sens
 			mServerPlayer.addPokman(pokguy);
 
 			curPoksprite.setZIndex(50);
+			efh.addSprite(curPoksprite);
+			
 			mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(curPoksprite, pokguy));
 			mScene.attachChild(curPoksprite);
 			mCamera.setChaseEntity(curPoksprite);
@@ -293,6 +289,8 @@ public class MultiplayerActivity extends SimpleBaseGameActivity  implements Sens
 			mServerPlayer.addGhost(aGhost);
 
 			curGhostsprite.setZIndex(50);
+			efh.addSprite(curGhostsprite);
+			
 			mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(curGhostsprite, aGhost));
 			mScene.attachChild(curGhostsprite);
 			
@@ -350,9 +348,16 @@ public class MultiplayerActivity extends SimpleBaseGameActivity  implements Sens
 							PlayerHandler curClient = mPlayerEntities.get(clients.get(i));
 							for(int g=0;g<curClient.getPokmans().size();g++) {
 								if(curClient.getPokmans().get(g) == pokman)
-									curClient.updateScore(-10);
+									curClient.updateScore(-30);
 							}
 						}
+						
+						PlayerHandler curClient = mServerPlayer;
+						for(int g=0;g<curClient.getPokmans().size();g++) {
+							if(curClient.getPokmans().get(g) == pokman)
+								curClient.updateScore(-30);
+						}
+						
 						runOnUpdateThread( new Runnable(){
 							@Override
 							public void run() {
@@ -539,6 +544,7 @@ public class MultiplayerActivity extends SimpleBaseGameActivity  implements Sens
 			public void run() {
 				if(mPokmans.get(index) == null) {
 					Sprite spr = new Sprite(0,0,tex.get("pok"),getVertexBufferObjectManager());
+					efh.addSprite(spr);
 					Body pac   = PhysicsFactory.createBoxBody(mPhysicsWorld, spr, BodyType.DynamicBody, PhysicsFactory.createFixtureDef(1, 0, 0.2f));
 					
 					mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(spr, pac,true,true));
@@ -551,6 +557,7 @@ public class MultiplayerActivity extends SimpleBaseGameActivity  implements Sens
 				} 
 				
 				mPokmans.get(index).setTransform(x, y, angle);
+				efh.update();
 			}
 		});
 	}
@@ -566,7 +573,7 @@ public class MultiplayerActivity extends SimpleBaseGameActivity  implements Sens
 						
 					Sprite spr = new Sprite(0,0,hi,getVertexBufferObjectManager());
 					Body ghst   = PhysicsFactory.createBoxBody(mPhysicsWorld, spr, BodyType.DynamicBody, PhysicsFactory.createFixtureDef(1, 0, 0.2f));
-					
+					efh.addSprite(spr);
 					mPhysicsWorld.registerPhysicsConnector(new PhysicsConnector(spr, ghst,true,true));
 					mScene.attachChild(spr);
 					
@@ -574,6 +581,7 @@ public class MultiplayerActivity extends SimpleBaseGameActivity  implements Sens
 				} 
 				
 				mGhosts.get(index).setTransform(x, y, angle);
+				efh.update();
 			}
 		});
 	}
@@ -710,6 +718,7 @@ public class MultiplayerActivity extends SimpleBaseGameActivity  implements Sens
 				updateScore(1,mServerPlayer.getScore());
 			}
 		}
+		efh.update();
 	}
 
 	private Vector2 getPosition(int index, boolean pok) {

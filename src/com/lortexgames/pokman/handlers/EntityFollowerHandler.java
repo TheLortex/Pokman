@@ -34,6 +34,7 @@ public class EntityFollowerHandler {
 		
 		mCamera.getHUD().attachChild(icon);
 		mFollowingSprites.put(toFollow, icon);
+		mCamera.getHUD().sortChildren();
 	}
 	
 	public void removeSprite(final Sprite toRemove) {
