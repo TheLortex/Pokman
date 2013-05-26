@@ -1,8 +1,7 @@
-package com.lortexgames.pokman.handlers;
+package com.lortexgames.pokman_final.handlers;
 
 import java.util.Vector;
 
-import org.andengine.util.debug.Debug;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;

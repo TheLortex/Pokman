@@ -1,4 +1,4 @@
-package com.lortexgames.pokman.activities;
+package com.lortexgames.pokman_final.activities;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,10 +28,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.lortexgames.pokman.FontManager;
-import com.lortexgames.pokman.R;
-import com.lortexgames.pokman.R.string;
-import com.lortexgames.pokman.addons.Paginator;
+import com.lortexgames.pokman_final.R;
+import com.lortexgames.pokman_final.FontManager;
+import com.lortexgames.pokman_final.addons.Paginator;
 
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -52,7 +51,7 @@ public class HighscoresActivity extends SimpleBaseGameActivity {
 
 	private SparseArray<Pair<Integer, String>> scoreList=new SparseArray<Pair<Integer, String>>();
 	private SparseArray<Pair<Integer, String>> onlineScoreList=new SparseArray<Pair<Integer, String>>();
-	private SparseArray<Pair<Integer, String>> onlineWeeklyScoreList=new SparseArray<Pair<Integer, String>>();
+	//private SparseArray<Pair<Integer, String>> onlineWeeklyScoreList=new SparseArray<Pair<Integer, String>>();
 	
 	DefaultHttpClient client = new DefaultHttpClient();
 	ResponseHandler<String> responseHandler = new BasicResponseHandler();

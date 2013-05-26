@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.lortexgames.pokman"
-    android:versionCode="900"
-    android:versionName="beta0.7.0"
+    package="com.lortexgames.pokman_final"
+    android:versionCode="1000"
+    android:versionName="0.8.0"
     android:installLocation="auto" >
 
     <uses-sdk
@@ -25,15 +25,14 @@
         android:icon="@drawable/ic_launcher"
         android:label="Pokman"
         android:theme="@style/themeSelector" 
-        android:name=".AppInterface">
+        android:name="com.lortexgames.pokman_final.AppInterface">
         
         <meta-data android:name="GIFTIZ_PARTNER_KEY" android:value="e30bc4a5-eb83-4400-84e6-ced713d05d2e"/>
         <meta-data android:name="SHOW_GIFTIZ_LOG" android:value="false" /> 
         <meta-data android:name="com.google.android.gms.games.APP_ID" android:value="@string/app_id" />
 		<activity android:name="com.purplebrain.giftiz.sdk.GiftizWebViewActivity" />
         
-        <activity
-            android:name="com.lortexgames.pokman.activities.MenuActivity"
+        <activity android:name="com.lortexgames.pokman_final.activities.MenuActivity"
             android:screenOrientation="portrait" 
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@style/themeSelector">
@@ -42,48 +41,39 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity 
-            android:name="com.lortexgames.pokman.activities.GameActivity"
+        <activity android:name="com.lortexgames.pokman_final.activities.GameActivity"
             android:screenOrientation="portrait" 
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@style/themeSelector"></activity>
-        <activity 
-            android:name="com.lortexgames.pokman.activities.TutorialActivity"
+        <activity android:name="com.lortexgames.pokman_final.activities.TutorialActivity"
             android:screenOrientation="portrait" 
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@style/themeSelector"></activity>
-        <activity 
-            android:name="com.lortexgames.pokman.activities.OptionsActivity"
+        <activity android:name="com.lortexgames.pokman_final.activities.OptionsActivity"
             android:screenOrientation="portrait" 
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@style/themeSelector"></activity>
-        <activity 
-            android:name="com.lortexgames.pokman.activities.EndGameActivity"
+        <activity android:name="com.lortexgames.pokman_final.activities.EndGameActivity"
             android:screenOrientation="portrait" 
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@style/themeSelector"></activity>
-        <activity 
-            android:name="com.lortexgames.pokman.activities.CreditActivity"
+        <activity android:name="com.lortexgames.pokman_final.activities.CreditActivitya"
             android:screenOrientation="portrait" 
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@style/themeSelector"></activity>
-        <activity 
-            android:name="com.lortexgames.pokman.activities.HighscoresActivity"
+        <activity android:name="com.lortexgames.pokman_final.activities.HighscoresActivity"
             android:screenOrientation="portrait" 
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@style/themeSelector"></activity>
-        <activity 
-            android:name="com.lortexgames.pokman.activities.LobbyActivity2"
+        <activity android:name="com.lortexgames.pokman_final.activities.LobbyActivity2"
             android:screenOrientation="portrait" 
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@style/themeSelector"></activity>
-        <activity 
-            android:name="com.lortexgames.pokman.activities.MultiplayerActivity"
+        <activity android:name="com.lortexgames.pokman_final.activities.MultiplayerActivity"
             android:screenOrientation="portrait" 
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@style/themeSelector"></activity>
-        <activity 
-            android:name="com.lortexgames.pokman.activities.StopBluetooth"
+        <activity android:name="com.lortexgames.pokman_final.activities.StopBluetooth"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:theme="@android:style/Theme.Dialog"
             android:excludeFromRecents="true" ></activity>

@@ -1,9 +1,9 @@
 // Definitions for sprite sheet walls
 // Created with TexturePacker www.codeandweb.com/texturepacker
 
-// $TexturePacker:SmartUpdate:ba0224e13fcd180a9d94fcaeae0b026d$
+// $TexturePacker:SmartUpdate:8cca28300e3bfb4e814f67316975f84d$
 
-package com.lortexgames.pokman;
+package WallTexture;
 
 public interface walls
 {

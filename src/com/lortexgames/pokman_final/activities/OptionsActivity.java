@@ -1,4 +1,4 @@
-package com.lortexgames.pokman.activities;
+package com.lortexgames.pokman_final.activities;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,9 +25,7 @@ import org.andengine.opengl.texture.region.TextureRegionFactory;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.util.adt.io.in.IInputStreamOpener;
 
-import com.lortexgames.pokman.R;
-import com.lortexgames.pokman.R.array;
-import com.lortexgames.pokman.R.string;
+import com.lortexgames.pokman_final.R;
 
 import android.app.AlertDialog;
 import android.app.Service;

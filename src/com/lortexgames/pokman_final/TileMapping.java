@@ -1,4 +1,4 @@
-package com.lortexgames.pokman;
+package com.lortexgames.pokman_final;
 
 import java.io.IOException;
 
@@ -9,10 +9,6 @@ import org.andengine.extension.texturepacker.opengl.texture.util.texturepacker.T
 import org.andengine.extension.texturepacker.opengl.texture.util.texturepacker.TexturePackTextureRegionLibrary;
 import org.andengine.extension.texturepacker.opengl.texture.util.texturepacker.exception.TexturePackParseException;
 import org.andengine.opengl.texture.ITexture;
-import org.andengine.opengl.texture.Texture;
-import org.andengine.opengl.texture.TextureOptions;
-import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
-import org.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
 import org.andengine.opengl.texture.region.ITextureRegion;
 import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
@@ -33,7 +29,6 @@ public class TileMapping implements walls{
 	private int margWallY;
 
 	private SimpleBaseGameActivity mParent;
-	private BitmapTextureAtlas mBitmapTextureAtlas;
 	
 	public TileMapping(MazeGenerator maze,SimpleBaseGameActivity parent) {
 		mParent = parent;

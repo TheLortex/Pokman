@@ -1,4 +1,4 @@
-package com.lortexgames.pokman;
+package com.lortexgames.pokman_final;
 
 import android.util.SparseArray;
 

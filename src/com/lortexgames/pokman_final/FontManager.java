@@ -1,4 +1,4 @@
-package  com.lortexgames.pokman;
+package  com.lortexgames.pokman_final;
 
 import org.andengine.opengl.font.Font;
 import org.andengine.opengl.font.FontFactory;

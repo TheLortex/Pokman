@@ -1,4 +1,4 @@
-package com.lortexgames.pokman.activities;
+package com.lortexgames.pokman_final.activities;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -27,7 +27,6 @@ import org.andengine.extension.input.touch.controller.MultiTouchController;
 import org.andengine.extension.input.touch.detector.PinchZoomDetector;
 import org.andengine.extension.input.touch.detector.PinchZoomDetector.IPinchZoomDetectorListener;
 import org.andengine.extension.input.touch.exception.MultiTouchException;
-import org.andengine.extension.physics.box2d.FixedStepPhysicsWorld;
 import org.andengine.extension.physics.box2d.PhysicsConnector;
 import org.andengine.extension.physics.box2d.PhysicsFactory;
 import org.andengine.input.touch.TouchEvent;
@@ -42,17 +41,17 @@ import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
 import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Manifold;
-import com.lortexgames.pokman.AppInterface;
-import com.lortexgames.pokman.Element;
-import com.lortexgames.pokman.FontManager;
-import com.lortexgames.pokman.MazeGenerator;
-import com.lortexgames.pokman.TileMapping;
-import com.lortexgames.pokman.addons.MaxStepPhysicsWorld;
-import com.lortexgames.pokman.handlers.BluetoothConnectedThread;
-import com.lortexgames.pokman.handlers.BluetoothReceiverInterface;
-import com.lortexgames.pokman.handlers.EntityFollowerHandler;
-import com.lortexgames.pokman.handlers.PlayerHandler;
-import com.lortexgames.pokman.handlers.TextureHandler;
+import com.lortexgames.pokman_final.AppInterface;
+import com.lortexgames.pokman_final.Element;
+import com.lortexgames.pokman_final.FontManager;
+import com.lortexgames.pokman_final.MazeGenerator;
+import com.lortexgames.pokman_final.TileMapping;
+import com.lortexgames.pokman_final.addons.MaxStepPhysicsWorld;
+import com.lortexgames.pokman_final.handlers.BluetoothConnectedThread;
+import com.lortexgames.pokman_final.handlers.BluetoothReceiverInterface;
+import com.lortexgames.pokman_final.handlers.EntityFollowerHandler;
+import com.lortexgames.pokman_final.handlers.PlayerHandler;
+import com.lortexgames.pokman_final.handlers.TextureHandler;
 
 import android.content.Context;
 import android.hardware.Sensor;
@@ -72,9 +71,9 @@ public class MultiplayerActivity extends SimpleBaseGameActivity  implements Sens
 	private static final int TILE_SIZE=40;
     private final static int HUD_HEIGHT=120;
 
-    private static final int GM_POK_VS_GHOST = 0;
+  //  private static final int GM_POK_VS_GHOST = 0;
     private static final int GM_DEATHMATCH   = 1;
-    private static final int GM_COOP         = 2;
+  //  private static final int GM_COOP         = 2;
     
 	private int marginLeft;
 	private int marginTop;
@@ -348,7 +347,7 @@ public class MultiplayerActivity extends SimpleBaseGameActivity  implements Sens
 					
 					if( (AuserData.equalsIgnoreCase("pokman") && BuserData.equalsIgnoreCase("ghost")) || (AuserData.equalsIgnoreCase("ghost") && BuserData.equalsIgnoreCase("pokman"))) {
 						final Body pokman = AuserData.equalsIgnoreCase("pokman") ? A : B;
-						final Body ghost  = AuserData.equalsIgnoreCase("pokman") ? B : A;
+				//		final Body ghost  = AuserData.equalsIgnoreCase("pokman") ? B : A;
 						
 						for(int i=0;i<clients.size();i++) {
 							PlayerHandler curClient = mPlayerEntities.get(clients.get(i));

@@ -1,12 +1,12 @@
-package com.lortexgames.pokman.handlers;
+package com.lortexgames.pokman_final.handlers;
 
 import java.io.IOException;
 import java.util.UUID;
 
 import org.andengine.util.debug.Debug;
 
-import com.lortexgames.pokman.activities.LobbyActivity2;
-import com.lortexgames.pokman.activities.MenuActivity;
+import com.lortexgames.pokman_final.activities.LobbyActivity2;
+import com.lortexgames.pokman_final.activities.MenuActivity;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -19,8 +19,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.os.Handler;
-import android.os.Looper;
 
 public class BluetoothHandler {
 	public static final int REQUEST_ENABLE_BT = 42;
@@ -31,11 +29,11 @@ public class BluetoothHandler {
 
 	private BroadcastReceiver mReceiver;
 
-	private boolean connected=false;	
+//	private boolean connected=false;	
 	private boolean mBtEnabled;	
 	
-	private BluetoothDevice pair;
-	private BluetoothSocket sock;
+	//private BluetoothDevice pair;
+	//private BluetoothSocket sock;
 	
 	private AcceptThread mServer=null;
 	
@@ -183,7 +181,8 @@ public class BluetoothHandler {
 	    }
 	 
 	    /** Will cancel an in-progress connection, and close the socket */
-	    public void cancel() {
+	    @SuppressWarnings("unused")
+		public void cancel() {
 	        try {
 	            mmSocket.close();
 	        } catch (IOException e) { }

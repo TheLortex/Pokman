@@ -1,8 +1,8 @@
-package com.lortexgames.pokman;
+package com.lortexgames.pokman_final;
 
 import java.util.Vector;
 
-import com.lortexgames.pokman.handlers.BluetoothConnectedThread;
+import com.lortexgames.pokman_final.handlers.BluetoothConnectedThread;
 
 import android.app.Application;
 

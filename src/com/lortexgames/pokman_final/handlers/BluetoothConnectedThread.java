@@ -1,16 +1,11 @@
-package com.lortexgames.pokman.handlers;
+package com.lortexgames.pokman_final.handlers;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
 
 import org.andengine.util.debug.Debug;
 
-
-import android.app.Activity;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothServerSocket;
 import android.bluetooth.BluetoothSocket;
 
 public class BluetoothConnectedThread extends Thread {

@@ -1,4 +1,4 @@
-package com.lortexgames.pokman.activities;
+package com.lortexgames.pokman_final.activities;
 
 import org.andengine.engine.camera.Camera;
 import org.andengine.engine.options.EngineOptions;

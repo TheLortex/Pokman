@@ -1,11 +1,9 @@
-package com.lortexgames.pokman.activities;
+package com.lortexgames.pokman_final.activities;
 
 
-import com.lortexgames.pokman.FontManager;
-import com.lortexgames.pokman.R;
-import com.lortexgames.pokman.R.raw;
-import com.lortexgames.pokman.R.string;
-import com.lortexgames.pokman.addons.Paginator;
+import com.lortexgames.pokman_final.R;
+import com.lortexgames.pokman_final.FontManager;
+import com.lortexgames.pokman_final.addons.Paginator;
 
 import java.io.IOException;
 import java.io.InputStream;

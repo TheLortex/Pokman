@@ -1,16 +1,13 @@
-package com.lortexgames.pokman.handlers;
+package com.lortexgames.pokman_final.handlers;
 
 import java.util.HashMap;
 import java.util.Iterator;
 
 import org.andengine.engine.camera.ZoomCamera;
-import org.andengine.entity.scene.Scene;
 import org.andengine.entity.sprite.Sprite;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
-import org.andengine.util.debug.Debug;
 
-import com.lortexgames.pokman.activities.GameActivity;
-import com.lortexgames.pokman.activities.MenuActivity;
+import com.lortexgames.pokman_final.activities.MenuActivity;
 
 
 public class EntityFollowerHandler {

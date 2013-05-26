@@ -1,4 +1,4 @@
-package com.lortexgames.pokman;
+package com.lortexgames.pokman_final;
 
 public class LevelSet {
 	public int nGhosts=4;

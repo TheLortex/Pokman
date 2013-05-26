@@ -1,8 +1,7 @@
-package com.lortexgames.pokman.activities;
+package com.lortexgames.pokman_final.activities;
 
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
-import android.content.SharedPreferences.Editor;
 import android.widget.Toast;
 
 public class StopBluetooth extends Activity {

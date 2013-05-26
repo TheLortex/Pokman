@@ -1,4 +1,4 @@
-package com.lortexgames.pokman.addons;
+package com.lortexgames.pokman_final.addons;
 
 import org.andengine.entity.Entity;
 import org.andengine.entity.primitive.Line;

@@ -1,4 +1,4 @@
-package com.lortexgames.pokman.handlers;
+package com.lortexgames.pokman_final.handlers;
 
 import java.io.IOException;
 import java.io.InputStream;

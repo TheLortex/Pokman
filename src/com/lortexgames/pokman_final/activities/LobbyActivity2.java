@@ -1,29 +1,23 @@
-package com.lortexgames.pokman.activities;
+package com.lortexgames.pokman_final.activities;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Vector;
 
-import org.andengine.entity.text.Text;
-import org.andengine.input.touch.TouchEvent;
-import org.andengine.util.color.Color;
 import org.andengine.util.debug.Debug;
 
-import com.lortexgames.pokman.AppInterface;
-import com.lortexgames.pokman.R;
-import com.lortexgames.pokman.handlers.BluetoothConnectedThread;
-import com.lortexgames.pokman.handlers.BluetoothHandler;
-import com.lortexgames.pokman.handlers.BluetoothReceiverInterface;
+import com.lortexgames.pokman_final.R;
+import com.lortexgames.pokman_final.AppInterface;
+import com.lortexgames.pokman_final.handlers.BluetoothConnectedThread;
+import com.lortexgames.pokman_final.handlers.BluetoothHandler;
+import com.lortexgames.pokman_final.handlers.BluetoothReceiverInterface;
 
 import android.app.Activity;
-import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
-import android.content.res.ColorStateList;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.view.View;
@@ -35,7 +29,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.RatingBar;
 import android.widget.SlidingDrawer;
 import android.widget.TextView;
 import android.widget.Toast;

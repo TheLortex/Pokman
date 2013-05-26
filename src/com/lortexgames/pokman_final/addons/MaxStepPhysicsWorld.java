@@ -1,4 +1,4 @@
-package com.lortexgames.pokman.addons;
+package com.lortexgames.pokman_final.addons;
 
 import org.andengine.extension.physics.box2d.PhysicsWorld;
 
