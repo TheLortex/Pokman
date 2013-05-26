@@ -34,6 +34,8 @@ import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 
+import com.google.example.games.basegameutils.GameHelper;
+import com.lortexgames.pokman_final.AppInterface;
 import com.lortexgames.pokman_final.R;
 import com.lortexgames.pokman_final.FontManager;
 import com.purplebrain.giftiz.sdk.GiftizSDK;
@@ -61,12 +63,13 @@ import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.SeekBar.OnSeekBarChangeListener;
 import android.widget.TextView;
 
-public class MenuActivity extends SimpleBaseGameActivity  /*implements ButtonNeedsUpdateDelegate, GameHelper.GameHelperListener*/{
+public class MenuActivity extends SimpleBaseGameActivity  implements GameHelper.GameHelperListener{
 	private Camera camera;
 
 	static int mScreenWidth;
@@ -99,10 +102,18 @@ public class MenuActivity extends SimpleBaseGameActivity  /*implements ButtonNee
 	protected float timeElapsed;
 	protected boolean updateModt;
 	private Text multiplayer;
-	//private GameHelper mGameHelper;
+	private GameHelper mGameHelper;
+
+	private boolean mGplusConnected=false;
+	private boolean mGamesAutoConnect=true;
+	
+	private Menu mMenu;
+
 	
     public static final String PREFS_NAME = "PokmanPrefs";
     public final static String LEVEL = "com.lortexgames.pokman.LEVEL";
+
+	private static final int REQUEST_ACHIEVEMENTS = 12;
 	
     public static boolean GIFTIZ_ENABLED=false;
 	
@@ -152,15 +163,25 @@ public class MenuActivity extends SimpleBaseGameActivity  /*implements ButtonNee
 		}catch (IOException e) {
 			Debug.e(e);
 		}
-		/*
-		mGameHelper = new GameHelper(this);
-		mGameHelper.setup(this);*/
+		
+
+		AppInterface app = (AppInterface)this.getApplication();
+		mGameHelper = app.getGameHelper();
+		if(mGameHelper == null) {
+			mGameHelper = new GameHelper(this);
+			mGameHelper.setup(this);
+		}
 	}
 
 	@Override
 	protected Scene onCreateScene() {
+
 		final Scene scene = new Scene();
 		scene.setBackground(new Background(0,0,0));
+		
+		AppInterface app = (AppInterface)this.getApplication();
+		if(app.getGameHelper() == null)
+			app.addGameHelper(mGameHelper);
 		
 		final boolean hapticFeedback = System.getInt(this.getContentResolver(), Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) != 0;
 		
@@ -180,7 +201,6 @@ public class MenuActivity extends SimpleBaseGameActivity  /*implements ButtonNee
 		    	new AsyncGetModt().execute((Void)null);
 			}
 	    });
-
         
 		play = new Text((float) (getWidth()*0.3), (float) (getHeight() * 0.3), font.get(60, Color.WHITE), getResources().getString(R.string.btn_startgame), this.getVertexBufferObjectManager()) {
 		    public boolean onAreaTouched(TouchEvent pSceneTouchEvent, float pTouchAreaLocalX, float pTouchAreaLocalY) {
@@ -503,6 +523,14 @@ public class MenuActivity extends SimpleBaseGameActivity  /*implements ButtonNee
 			@Override
 			public void reset() {}
 		});
+
+		if(mGamesAutoConnect)
+			this.runOnUiThread(new Runnable() {
+				@Override
+				public void run() {
+					mGameHelper.beginUserInitiatedSignIn();
+				}
+			});
 		
 		return scene;
 	}
@@ -689,31 +717,61 @@ public class MenuActivity extends SimpleBaseGameActivity  /*implements ButtonNee
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.layout.menu, menu);
+        mMenu = menu;
+        
+        if(mGplusConnected == true) {
+	    	mMenu.getItem(0).setTitle("Déconnexion");
+	    	mMenu.getItem(1).setEnabled(true);
+        }
         return true;
      }
  
-       //Méthode qui se déclenchera au clic sur un item
-      public boolean onOptionsItemSelected(MenuItem item) { 
-         //On regarde quel item a été cliqué grâce à son id et on déclenche une action
-         switch (item.getItemId()) {
-            case R.id.gplus_button:
-            		
-               return true;
-         }
-         return false;}
+       
+     public boolean onOptionsItemSelected(MenuItem item) { 
+	 switch (item.getItemId()) {
+	 	case R.id.gplus_button:
+	 		if(!mGplusConnected) {
+	 			mGameHelper.beginUserInitiatedSignIn();
+ 		    	mGamesAutoConnect=true;
+	 		} else {
+	 			if(mGameHelper.isSignedIn()) {
+	 				mGameHelper.signOut();
+	 				mGplusConnected = false;
+	 		        
+	 		    	mMenu.getItem(0).setTitle("Connexion");
+	 		    	mMenu.getItem(1).setEnabled(false);
+	 		    	mGamesAutoConnect=false;
+	 			}
+	 		}
+	 		return true;
+	 	case R.id.menu_achievements:
+	 		if(mGplusConnected)
+	 			startActivityForResult(mGameHelper.getGamesClient().getAchievementsIntent(), REQUEST_ACHIEVEMENTS);
+	 		return true;
+     }
+     return false;}
 	
-/*	@Override
+	@Override
 	public void onSignInFailed() {
-		Debug.w("Sign in failed");
-	    findViewById(R.id.sign_in_button).setVisibility(View.VISIBLE);
-	    findViewById(R.id.sign_out_button).setVisibility(View.GONE);
+		this.toastOnUIThread("Connection échouée");
+		mGplusConnected = false;
+
+		if(mMenu!=null) {
+	    	mMenu.getItem(0).setTitle("Connexion");
+	    	mMenu.getItem(1).setEnabled(false);
+		}
+		
+		
 	}
 
 	@Override
 	public void onSignInSucceeded() {
-		Debug.w("Sign in succeeded");
-	    findViewById(R.id.sign_in_button).setVisibility(View.GONE);
-	    findViewById(R.id.sign_out_button).setVisibility(View.VISIBLE);
-	}*/
+		this.toastOnUIThread("Connection effectuée");
+		mGplusConnected = true;
+		if(mMenu!=null) {
+	    	mMenu.getItem(0).setTitle("Déconnexion");
+	    	mMenu.getItem(1).setEnabled(true);
+		}
+	}
 
 }

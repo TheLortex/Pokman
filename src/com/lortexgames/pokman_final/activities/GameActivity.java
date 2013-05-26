@@ -52,6 +52,9 @@ import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Filter;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.Manifold;
+import com.google.android.gms.games.achievement.OnAchievementUpdatedListener;
+import com.google.example.games.basegameutils.GameHelper;
+import com.lortexgames.pokman_final.AppInterface;
 import com.lortexgames.pokman_final.R;
 import com.lortexgames.pokman_final.Element;
 import com.lortexgames.pokman_final.FontManager;
@@ -116,6 +119,8 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 	private int nVies = 3;
 	private int mScore = 0;
 	private int mPointValue = 10;
+	
+	
 
 	private int spawnPacX, spawnPacY;
 	private int spawnGhostX=-1, spawnGhostY=-1;
@@ -215,6 +220,9 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 	private EntityFollowerHandler efh;
 	
 	private float mMinZoomFactor;
+	/// GPlayGames
+	private GameHelper mGameHelper;
+	private int nPointsEaten=0;
 	
 	
 	@Override
@@ -226,6 +234,9 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		mLevel = intent.getIntExtra(MenuActivity.LEVEL,1);
 		mScore = intent.getIntExtra(SCORE,0);
 		nVies = intent.getIntExtra(NVIES,3);
+		
+		AppInterface app = (AppInterface)this.getApplication();
+		mGameHelper = app.getGameHelper();
 
 		gravity = new Vector2();
 		force = new Vector2();
@@ -1056,6 +1067,20 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
     			points.get(x).remove(y);
     			
     			mScore += mPointValue;
+    			nPointsEaten++;
+    			if((nPointsEaten == 42)&&(mGameHelper != null)) { //TODO: Unlock achievement
+    				if(mGameHelper.isSignedIn()) {
+    					mGameHelper.getGamesClient().unlockAchievementImmediate(new OnAchievementUpdatedListener() {
+							@Override
+							public void onAchievementUpdated(int statusCode, String achievementId) {
+								Debug.v("ST:"+statusCode);
+							}
+    					}, getString(R.string.id_42));
+    				}
+    			}
+
+
+    				
     			if(!isPocoing) {
     				isPocoing = true;
         			soundPool.play(idPoco, percentageGfx*volume, percentageGfx*volume, 1, 0, 1f);
@@ -1090,6 +1115,17 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		        		editor.putInt("giftizMissionStatus", 1);
 		        		editor.commit();
 		        	}
+		        	
+		    		if((mLevel == 1)&&(mGameHelper != null)) { //TODO: Unlock achievement
+		    			if(mGameHelper.isSignedIn()) {
+		    				mGameHelper.getGamesClient().unlockAchievementImmediate(new OnAchievementUpdatedListener() {
+		    					@Override
+		    					public void onAchievementUpdated(int statusCode, String achievementId) {
+		    						Debug.v("ST:"+statusCode);
+		    					}
+		    				}, getString(R.string.id_level1));
+		    			}
+		    		}
 
 		        	mScore += mWinPoints;
 		        	

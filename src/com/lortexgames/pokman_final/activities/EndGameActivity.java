@@ -1,6 +1,9 @@
 package com.lortexgames.pokman_final.activities;
 
 
+import com.google.android.gms.games.achievement.OnAchievementUpdatedListener;
+import com.google.example.games.basegameutils.GameHelper;
+import com.lortexgames.pokman_final.AppInterface;
 import com.lortexgames.pokman_final.R;
 import com.lortexgames.pokman_final.FontManager;
 import com.lortexgames.pokman_final.addons.Paginator;
@@ -32,6 +35,7 @@ import org.andengine.opengl.texture.region.TextureRegion;
 import org.andengine.opengl.texture.region.TextureRegionFactory;
 import org.andengine.ui.activity.SimpleBaseGameActivity;
 import org.andengine.util.adt.io.in.IInputStreamOpener;
+import org.andengine.util.debug.Debug;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
@@ -126,6 +130,8 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 	
 	private boolean scoreReafy=false;
 
+	private GameHelper mGameHelper;
+
 
 	@Override
 	public EngineOptions onCreateEngineOptions() {
@@ -209,6 +215,10 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 	protected Scene onCreateScene() {
 		mScene = new Scene();
 		mScene.setBackground(new Background(0f,0f,0f));
+		
+
+		AppInterface app = (AppInterface)this.getApplication();
+		mGameHelper = app.getGameHelper();
 
 		settings = this.getSharedPreferences(MenuActivity.PREFS_NAME, 0);
 		lastName = settings.getString("lastName", "");
@@ -480,6 +490,8 @@ public class EndGameActivity extends SimpleBaseGameActivity {
 		pagination = new Paginator(20, MenuActivity.getHeight()-20, MenuActivity.getWidth()-40, 15, 3, 2, this.getVertexBufferObjectManager());
 		mScene.attachChild(pagination);
 		scoreReafy=true;
+		
+
 		return mScene;
 	}
 	

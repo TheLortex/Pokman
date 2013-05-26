@@ -29,7 +29,9 @@
         
         <meta-data android:name="GIFTIZ_PARTNER_KEY" android:value="e30bc4a5-eb83-4400-84e6-ced713d05d2e"/>
         <meta-data android:name="SHOW_GIFTIZ_LOG" android:value="false" /> 
-        <meta-data android:name="com.google.android.gms.games.APP_ID" android:value="@string/app_id" />
+        <meta-data android:name="com.google.android.gms.games.APP_ID"
+            android:value="@string/app_id" />
+       
 		<activity android:name="com.purplebrain.giftiz.sdk.GiftizWebViewActivity" />
         
         <activity android:name="com.lortexgames.pokman_final.activities.MenuActivity"
