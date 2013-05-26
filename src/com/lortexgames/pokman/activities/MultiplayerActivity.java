@@ -125,6 +125,7 @@ public class MultiplayerActivity extends SimpleBaseGameActivity  implements Sens
 	private boolean receivingMap;
 	
 	private EntityFollowerHandler efh;
+	private float mMinZoomFactor;
 	
 	@Override
 	public EngineOptions onCreateEngineOptions() {
@@ -164,6 +165,11 @@ public class MultiplayerActivity extends SimpleBaseGameActivity  implements Sens
 
 		mCamera.setBounds(0, -HUD_HEIGHT, N_COL*TILE_SIZE, N_ROW*TILE_SIZE);
 		mCamera.setBoundsEnabled(true);
+		
+		mMinZoomFactor =  (float)(MenuActivity.getHeight() - HUD_HEIGHT - 50) / (float) (N_ROW * TILE_SIZE);
+		
+		if(mMinZoomFactor > 1)
+			mCamera.setZoomFactor(mMinZoomFactor);
 		
 		marginLeft = 0;
 		marginTop  = 0;
@@ -862,14 +868,14 @@ public class MultiplayerActivity extends SimpleBaseGameActivity  implements Sens
     public void onPinchZoom(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent, final float pZoomFactor) {
     	float zoom = mPinchZoomStartedCameraZoomFactor * pZoomFactor;
 		Debug.i(""+zoom);
-    	if((zoom > 0.7)&&(zoom < 2))
+    	if((zoom > mMinZoomFactor)&&(zoom < 2))
 			this.mCamera.setZoomFactor(zoom);
     }
 
     @Override
     public void onPinchZoomFinished(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent, final float pZoomFactor) {
     	float zoom = mPinchZoomStartedCameraZoomFactor * pZoomFactor;
-    	if((zoom > 0.7)&&(zoom < 2))
+    	if((zoom > mMinZoomFactor)&&(zoom < 2))
     		this.mCamera.setZoomFactor(zoom);
     }
 	

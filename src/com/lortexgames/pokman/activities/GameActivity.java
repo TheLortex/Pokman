@@ -218,6 +218,8 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 	private SpriteGroup sprPoints;
 	private EntityFollowerHandler efh;
 	
+	private float mMinZoomFactor;
+	
 	
 	@Override
 	public EngineOptions onCreateEngineOptions() {
@@ -273,6 +275,13 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 		
 		nRow = 25;
 		nCol = 15;
+		
+		mMinZoomFactor =  (float)(MenuActivity.getHeight() - HUD_HEIGHT - 50) / (float) (nRow * TILE_SIZE);
+		
+		Debug.i("MaxZoomFactor: "+mMinZoomFactor);
+		//mMaxZoomFactor = 2;
+		if(mMinZoomFactor > 1)
+			mCamera.setZoomFactor(mMinZoomFactor);
 		
 		//marginLeft = (gameL - nCol * (TILE_SIZE)) / 2;
 		//marginTop = HUD_HEIGHT;
@@ -1353,22 +1362,21 @@ public class GameActivity extends SimpleBaseGameActivity  implements SensorEvent
 	
 	@Override
     public void onPinchZoomStarted(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent) {
-		Debug.i("Pinch zoom started");
         this.mPinchZoomStartedCameraZoomFactor = mCamera.getZoomFactor();
 	}
 
     @Override
     public void onPinchZoom(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent, final float pZoomFactor) {
     	float zoom = mPinchZoomStartedCameraZoomFactor * pZoomFactor;
-		Debug.i(""+zoom);
-    	if((zoom > 0.7)&&(zoom < 2))
+    	Debug.i(":"+zoom);
+    	if((zoom > mMinZoomFactor)&&(zoom < 2))
 			this.mCamera.setZoomFactor(zoom);
     }
 
     @Override
     public void onPinchZoomFinished(final PinchZoomDetector pPinchZoomDetector, final TouchEvent pTouchEvent, final float pZoomFactor) {
     	float zoom = mPinchZoomStartedCameraZoomFactor * pZoomFactor;
-    	if((zoom > 0.7)&&(zoom < 2))
+    	if((zoom > mMinZoomFactor)&&(zoom < 2))
     		this.mCamera.setZoomFactor(zoom);
     }
 	
