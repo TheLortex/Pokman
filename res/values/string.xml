@@ -1,5 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="alert_dialog_ok">OK</string>
-    <string name="alert_dialog_cancel">Cancel</string> 
+    <string name="alert_dialog_cancel">Cancel</string>
+    <string name="app_title">POKMAN</string> 
+    <string name="menu_leaderboards">LEADERBOARDS</string>
+    <string name="menu_gpg_loading">Loading \n Google Play Games</string>
+    <string name="menu_gpg_connect">Connect to \n Google Play Games</string>
+    <string name="menu_gpg_disconnect">Disconnect from \n Google Play Games</string>
+    <string name="dialog_levelselect">Select your level</string>
+    <string name="dialog_leveldisplay">Level </string>
+    <string name="dialog_ok">OK</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="dialog_multi_host">Host the game</string>
+    <string name="dialog_multi_join">Join the game</string>
+    <string name="dialog_multi_noserver">No available server</string>
+    <string name="dialog_multi_serverselect">Select a server</string>
+    <string name="dialog_multi_searchingservers">Looking for servers</string>
+    <string name="dialog_multi_enterip">Enter IP manually</string>
+    <string name="dialog_multi_ip">Enter IP</string>
+    <string name="menu_play">PLAY</string>
+    <string name="menu_multiplay">MULTIPLAYER</string>
+    <string name="menu_tuto">TUTORIAL</string>
+    <string name="menu_quit">QUIT</string>
+    <string name="pause_title">PAUSED</string>
+    <string name="pause_resume">RESUME</string>
+    <string name="pause_quit">BACK TO MENU</string>
+    <string name="game_level">LEVEL</string>
+    <string name="game_start">START</string>
 </resources>

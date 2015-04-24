@@ -1,14 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+Google Play game services IDs.
+Save this file as res/values/games-ids.xml in your project.
+-->
 <resources>
-    <string name="app_id">607922319829</string> 
-    <string name="id_42">CgkI1eP519gREAIQBw</string> 
-    <string name="id_level1">CgkI1eP519gREAIQAQ</string> 
-    <string name="id_4ghosts">CgkI1eP519gREAIQAg</string> 
-    <string name="id_multi">CgkI1eP519gREAIQAw</string> 
-    <string name="id_5digits">CgkI1eP519gREAIQDw</string> 
-    <string name="id_1337dots">CgkI1eP519gREAIQDw</string> 
-    <string name="id_150ghosts">CgkI1eP519gREAIQDQ</string> 
-    <string name="id_lvl10">CgkI1eP519gREAIQBA</string> 
-    <string name="id_6digits">CgkI1eP519gREAIQEA</string> 
-    <string name="id_chuck">CgkI1eP519gREAIQBQ</string> 
+  <string name="app_id">896466634364</string>
+  <string name="achievement_pig">CgkI_IzNzIsaEAIQBg</string>
+  <string name="achievement_premier_sang">CgkI_IzNzIsaEAIQEA</string>
+  <string name="achievement_la_reponse">CgkI_IzNzIsaEAIQDw</string>
+  <string name="achievement_un_bon_debut">CgkI_IzNzIsaEAIQBw</string>
+  <string name="achievement_pacifiste">CgkI_IzNzIsaEAIQEw</string>
+  <string name="achievement_ca_se_corse">CgkI_IzNzIsaEAIQCA</string>
+  <string name="achievement_ace">CgkI_IzNzIsaEAIQDA</string>
+  <string name="achievement_goinfre">CgkI_IzNzIsaEAIQEQ</string>
+  <string name="achievement_tueur_en_srie">CgkI_IzNzIsaEAIQEg</string>
+  <string name="achievement_le_grand_rush">CgkI_IzNzIsaEAIQDg</string>
+  <string name="achievement_loptimisation_cest_ma_passion">CgkI_IzNzIsaEAIQDQ</string>
+  <string name="achievement_professionel">CgkI_IzNzIsaEAIQCQ</string>
+  <string name="achievement_like_a_boss">CgkI_IzNzIsaEAIQCg</string>
+  <string name="achievement_maitre_badass_ultime">CgkI_IzNzIsaEAIQCw</string>
+  <string name="achievement_plus_on_est_de_fous_plus_on_rit">CgkI_IzNzIsaEAIQFA</string>
+  <string name="achievement_comptitif">CgkI_IzNzIsaEAIQFQ</string>
+  <string name="leaderboard_high_scores">CgkI_IzNzIsaEAIQAg</string>
+  <string name="event_dots_eaten">CgkI_IzNzIsaEAIQAw</string>
+  <string name="event_ghosts_killed">CgkI_IzNzIsaEAIQBA</string>
+  <string name="event_temps_pass_en_jeu">CgkI_IzNzIsaEAIQBQ</string>
 </resources>

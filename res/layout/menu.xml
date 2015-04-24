@@ -2,10 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
  
 <item android:id="@+id/gplus_button" 
-      android:title="Connexion"
-      android:icon="@drawable/common_signin_btn_icon_normal_dark"/>
+      android:title="Connexion"/>
 
-<item android:id="@+id/menu_achievements" 
-      android:title="Achievements"
+<item android:id="@+id/menu_leaderboard" 
+      android:title="Classements"
       android:enabled="false"/>
+
 </menu>
