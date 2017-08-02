@@ -1,8 +1,5 @@
 package org.lortex.games.pokman.server;
 
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Vector;
 
 import org.andengine.engine.handler.IUpdateHandler;
 import org.andengine.extension.physics.box2d.util.constants.PhysicsConstants;
@@ -37,10 +34,6 @@ import org.lortex.games.pokman.common.Packets.VulnerableGhostEnded;
 import org.lortex.games.pokman.common.Packets.VulnerableGhostNearEnd;
 import org.lortex.games.pokman.common.Type;
 import org.lortex.games.pokman.online.OnlinePackets;
-
-import android.util.Log;
-import android.util.SparseArray;
-import android.util.SparseIntArray;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;

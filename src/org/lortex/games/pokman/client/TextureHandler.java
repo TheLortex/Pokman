@@ -34,6 +34,7 @@ public class TextureHandler {
 	}
 
 	public TextureRegion get(String name) {
+		
 		return mTextureRegions.get(name);
 	}
 

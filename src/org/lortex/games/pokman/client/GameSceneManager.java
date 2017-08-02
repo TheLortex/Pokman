@@ -181,7 +181,7 @@ public class GameSceneManager {
 			}
 		}
 		sprWalls.submit();
-		sprWalls.setShaderProgram(mContext.getCustomColorShaderProgram());
+		//sprWalls.setShaderProgram(mContext.getCustomColorShaderProgram()); TODO: WORK ON IT
 		mScene.attachChild(sprWalls);
 		mScene.attachChild(sprPoints);
 	}
